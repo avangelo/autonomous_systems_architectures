@@ -2,6 +2,7 @@
 
 import rospy
 import math
+import time
 from robot_perception import RobotPerception
 from target_selection import TargetSelection
 from path_planning import PathPlanning
@@ -77,7 +78,6 @@ class Navigation:
         dist = math.hypot(\
             rx - self.subtargets[self.next_subtarget][0], \
             ry - self.subtargets[self.next_subtarget][1])
-
         # Check if distance is less than 7 px (14 cm)
         if dist < 7:
           print "Sub target reached!"
@@ -228,7 +228,50 @@ class Navigation:
         # robot_perception and the next_subtarget [x,y]. From these, you can 
         # compute the robot velocities for the vehicle to approach the target.
         # Hint: Trigonometry is required
+	
+	##### 7,8,9 #####
+        #[rx, ry] = [\
+            #self.robot_perception.robot_pose['x_px'] - \
+                    #self.robot_perception.origin['x'] / self.robot_perception.resolution,\
+            #self.robot_perception.robot_pose['y_px'] - \
+                    #self.robot_perception.origin['y'] / self.robot_perception.resolution\
+                    #]
+	#theta = self.robot_perception.robot_pose['th']
+	#if theta < 0:
+		#theta = 2 * math.pi + theta
 
+	#if self.subtargets:
+		#st_x = self.subtargets[self.next_subtarget][0]
+		#st_y = self.subtargets[self.next_subtarget][1]
+	        #dist = math.hypot(\
+            	#rx - st_x, \
+            	#ry - st_y)
+		#a = [st_x-rx, st_y-ry]
+		#if a[0] > 0 and a[1] >= 0:
+			#phi = math.atan(a[1]/a[0])
+		#if a[0] <= 0 and a[1] > 0:		
+			#phi = math.pi + math.atan(a[1]/a[0])
+		#if a[0] < 0 and a[1] <= 0:
+			#phi = math.pi + math.atan(a[1]/a[0])
+		#if a[0] >= 0 and a[1] < 0:
+			#phi = 2 * math.pi + math.atan(a[1]/a[0])
+		#ang_diff = (phi - theta)
+		#if ang_diff > math.pi or ang_diff < -math.pi:
+			#if theta > math.pi:
+				#theta = theta - 2 * math.pi
+			#elif phi > math.pi:
+				#phi = phi - 2 * math.pi
+		#ang_diff = (phi - theta)
+		#if ang_diff > 0.15 or ang_diff < -0.15:
+			#linear = 0.01
+			#angular = ang_diff / 5
+		#else:
+			#linear = 0.15
+			#angular = ang_diff / 5
+		#if angular > 0.1:
+			#angular = 0.1
+		#if angular < -0.1:
+			#angular = -0.1
         # ---------------------------------------------------------------------
 
         return [linear, angular]
