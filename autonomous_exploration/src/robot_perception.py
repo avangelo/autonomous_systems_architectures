@@ -140,11 +140,8 @@ class RobotPerception:
         # Each point should be in the form of [x,y] (theta does not concern us)
 	
 	##### 5 #####
-	if [self.robot_pose['x'],self.robot_pose['y']] in self.robot_trajectory:
-		print "duplicate"
-	else:
+	if [self.robot_pose['x'],self.robot_pose['y']] not in self.robot_trajectory:
 		self.robot_trajectory.append([self.robot_pose['x'],self.robot_pose['y']])
-	print self.robot_trajectory
         # ---------------------------------------------------------------------
 
         t_path = Path()
