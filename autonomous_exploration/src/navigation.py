@@ -230,48 +230,44 @@ class Navigation:
         # Hint: Trigonometry is required
 	
 	##### 7,8,9 #####
-        #[rx, ry] = [\
-            #self.robot_perception.robot_pose['x_px'] - \
-                    #self.robot_perception.origin['x'] / self.robot_perception.resolution,\
-            #self.robot_perception.robot_pose['y_px'] - \
-                    #self.robot_perception.origin['y'] / self.robot_perception.resolution\
-                    #]
-	#theta = self.robot_perception.robot_pose['th']
-	#if theta < 0:
-		#theta = 2 * math.pi + theta
+        [rx, ry] = [\
+            self.robot_perception.robot_pose['x_px'] - \
+                    self.robot_perception.origin['x'] / self.robot_perception.resolution,\
+            self.robot_perception.robot_pose['y_px'] - \
+                    self.robot_perception.origin['y'] / self.robot_perception.resolution\
+                    ]
+	theta = self.robot_perception.robot_pose['th']
+	if theta < 0:
+		theta = 2 * math.pi + theta
 
-	#if self.subtargets:
-		#st_x = self.subtargets[self.next_subtarget][0]
-		#st_y = self.subtargets[self.next_subtarget][1]
-	        #dist = math.hypot(\
-            	#rx - st_x, \
-            	#ry - st_y)
-		#a = [st_x-rx, st_y-ry]
-		#if a[0] > 0 and a[1] >= 0:
-			#phi = math.atan(a[1]/a[0])
-		#if a[0] <= 0 and a[1] > 0:		
-			#phi = math.pi + math.atan(a[1]/a[0])
-		#if a[0] < 0 and a[1] <= 0:
-			#phi = math.pi + math.atan(a[1]/a[0])
-		#if a[0] >= 0 and a[1] < 0:
-			#phi = 2 * math.pi + math.atan(a[1]/a[0])
-		#ang_diff = (phi - theta)
-		#if ang_diff > math.pi or ang_diff < -math.pi:
-			#if theta > math.pi:
-				#theta = theta - 2 * math.pi
-			#elif phi > math.pi:
-				#phi = phi - 2 * math.pi
-		#ang_diff = (phi - theta)
-		#if ang_diff > 0.15 or ang_diff < -0.15:
-			#linear = 0.01
-			#angular = ang_diff / 5
-		#else:
-			#linear = 0.15
-			#angular = ang_diff / 5
-		#if angular > 0.1:
-			#angular = 0.1
-		#if angular < -0.1:
-			#angular = -0.1
+	if self.subtargets:
+		st_x = self.subtargets[self.next_subtarget][0]
+		st_y = self.subtargets[self.next_subtarget][1]
+	        dist = math.hypot(\
+            	rx - st_x, \
+            	ry - st_y)
+		a = [st_x-rx, st_y-ry]
+		if a[0] > 0 and a[1] >= 0:
+			phi = math.atan(a[1]/a[0])
+		if a[0] <= 0 and a[1] > 0:		
+			phi = math.pi + math.atan(a[1]/a[0])
+		if a[0] < 0 and a[1] <= 0:
+			phi = math.pi + math.atan(a[1]/a[0])
+		if a[0] >= 0 and a[1] < 0:
+			phi = 2 * math.pi + math.atan(a[1]/a[0])
+		ang_diff = (phi - theta)
+		if ang_diff > math.pi or ang_diff < -math.pi:
+			if theta > math.pi:
+				theta = theta - 2 * math.pi
+			elif phi > math.pi:
+				phi = phi - 2 * math.pi
+		ang_diff = (phi - theta)
+		angular = ang_diff/5
+		if angular > 0.15:
+			angular = 0.15
+		if angular < -0.15:
+			angular = -0.15
+		linear = (0.15-abs(angular))**(4/3)
         # ---------------------------------------------------------------------
 
         return [linear, angular]
