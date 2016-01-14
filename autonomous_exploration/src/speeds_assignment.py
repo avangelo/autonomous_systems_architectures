@@ -202,14 +202,14 @@ class RobotController:
      
       
       ##### 3 #####
-      if front < 0.2:
-	self.linear_velocity = l_laser
-      else:
-	self.linear_velocity = l_sonar
-      if right < 0.2 or left < 0.2:
-	self.angular_velocity = a_laser
-      else:
-	self.angular_velocity = a_sonar
+      #if front < 0.2:
+	#self.linear_velocity = l_laser
+      #else:
+	#self.linear_velocity = l_sonar
+      #if right < 0.2 or left < 0.2:
+	#self.angular_velocity = a_laser
+      #else:
+	#self.angular_velocity = a_sonar
       
 
       ##### 8 #####
@@ -282,8 +282,8 @@ class RobotController:
       #self.angular_velocity = a_laser 
       
       ##### 4 #####
-      #self.linear_velocity = 0.5 * l_sonar + 0.5 * l_laser
-      #self.angular_velocity = 0.5 * a_sonar + 0.5 * a_laser
+      self.linear_velocity = 0.5 * l_sonar + 0.5 * l_laser
+      self.angular_velocity = 0.5 * a_sonar + 0.5 * a_laser
 
       ##### 9 #####
       #~ scan = self.laser_aggregation.laser_scan
