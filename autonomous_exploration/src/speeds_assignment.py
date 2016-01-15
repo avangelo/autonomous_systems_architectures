@@ -286,8 +286,8 @@ class RobotController:
       #self.angular_velocity = 0.5 * a_sonar + 0.5 * a_laser
       
       ##### 7 #####
-      self.linear_velocity = l_goal
-      self.angular_velocity = a_goal 
+      #self.linear_velocity = l_goal
+      #self.angular_velocity = a_goal 
 
       ##### 9 #####
       #scan = self.laser_aggregation.laser_scan
@@ -297,8 +297,6 @@ class RobotController:
       #min_left_laser = min(left_laser)
       #min_front_laser = min(front_laser)
       #min_right_laser = min(right_laser)
- 
-
       #if min_front_laser <= 0.2 or min_right_laser <= 0.2 or min_left_laser <= 0.2:
 	#self.linear_velocity = 0.125 * l_goal + 0.125 * l_sonar + 0.75 * l_laser
 	#self.angular_velocity = 0.125 * a_goal + 0.125 * a_sonar + 0.75 * a_laser
