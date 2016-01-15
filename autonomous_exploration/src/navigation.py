@@ -267,7 +267,7 @@ class Navigation:
 			angular = 0.15
 		if angular < -0.15:
 			angular = -0.15
-		linear = (0.15-abs(angular))**(4/3)
+		linear = (0.15-abs(angular))**(3/2)
         # ---------------------------------------------------------------------
 
         return [linear, angular]

@@ -87,38 +87,38 @@ class RobotController:
       # Adjust the linear and angular velocities using the five sonars values
 
       ##### 1 #####
-      Ff = front
-      Fl = 3 - left
-      Fr = 3 - right
-      Frr = 1 / r_right
-      Frl = 1 / r_left
-      Frrx = Frr * math.cos(20 * math.pi / 360)
-      Frry = Frr * math.sin(20 * math.pi / 360)
-      Frlx = Frl * math.cos(20 * math.pi / 360)
-      Frly = Frl * math.sin(20 * math.pi / 360)     
-      SFx = Ff + 0.25 * Frrx + 0.25 * Frlx
-      SFy = Fr - Fl + Frry - Frly
-      linear = SFx
-      linear = linear / 25
-      angular = SFy
-      angular = angular / 15
+      #Ff = front
+      #Fl = 3 - left
+      #Fr = 3 - right
+      #Frr = 1 / r_right
+      #Frl = 1 / r_left
+      #Frrx = Frr * math.cos(20 * math.pi / 360)
+      #Frry = Frr * math.sin(20 * math.pi / 360)
+      #Frlx = Frl * math.cos(20 * math.pi / 360)
+      #Frly = Frl * math.sin(20 * math.pi / 360)     
+      #SFx = Ff + 0.25 * Frrx + 0.25 * Frlx
+      #SFy = Fr - Fl + Frry - Frly
+      #linear = SFx
+      #linear = linear / 25
+      #angular = SFy
+      #angular = angular / 15
 
-      if front < 0.25:
-        linear = 0.005
-      if angular > 0.2:
-	angular = 0.2
-      if angular < -0.2:
-	angular = -0.2
-      if left < 0.2:
-	angular = -0.2
-      if right < 0.2:
-	angular = 0.2
-      if angular > 0.2:
-	angular = 0.2
-      if angular < -0.2:
-	angular = -0.2
-      if linear > 0.2:
-	linear = 0.2
+      #if front < 0.25:
+        #linear = 0.005
+      #if angular > 0.2:
+	#angular = 0.2
+      #if angular < -0.2:
+	#angular = -0.2
+      #if left < 0.2:
+	#angular = -0.2
+      #if right < 0.2:
+	#angular = 0.2
+      #if angular > 0.2:
+	#angular = 0.2
+      #if angular < -0.2:
+	#angular = -0.2
+      #if linear > 0.2:
+	#linear = 0.2
 
       # ---------------------------------------------------------------------
 
@@ -138,27 +138,24 @@ class RobotController:
       
       ##### 2 #####
 
-      SFx = 0
-      SFy = 0
-      SFyl = 0
-      SFyr = 0
-      for x in range(184,483):
-          SFx = SFx + scan[x]
-      SFx = SFx / 300
-      for x in range(0,283):
-          SFyl = SFyl + 1 / scan[x]
-      SFyl = SFyl / 284
-      for x in range(384,667):
-          SFyr = SFyr + 1 / scan[x]
-      SFyr = SFyr / 284
-      SFx = 2 * min(scan[184:433])
-      SFy = SFyl - SFyr
-      linear = SFx / 50
-      angular = SFy
-      if angular > 0.2:
-	angular = 0.2
-      if angular < -0.2:
-	angular = -0.2
+      #SFx = 0
+      #SFy = 0
+      #SFyl = 0
+      #SFyr = 0
+      #for x in range(0,283):
+          #SFyl = SFyl + 1 / scan[x]
+      #SFyl = SFyl / 284
+      #for x in range(384,667):
+          #SFyr = SFyr + 1 / scan[x]
+      #SFyr = SFyr / 284
+      #SFx = min(scan[233:433])
+      #SFy = SFyl - SFyr
+      #linear = SFx / 25
+      #angular = SFy
+      #if angular > 0.2:
+	#angular = 0.2
+      #if angular < -0.2:
+	#angular = -0.2
       # ---------------------------------------------------------------------
       return [linear, angular]
 
@@ -213,23 +210,23 @@ class RobotController:
       
 
       ##### 8 #####
-      scan = self.laser_aggregation.laser_scan
-      left_laser = scan[0:284]
-      front_laser = scan[284:384]
-      right_laser = scan[384:667]
-      min_left_laser = min(left_laser)
-      min_front_laser = min(front_laser)
-      min_right_laser = min(right_laser)
+      #scan = self.laser_aggregation.laser_scan
+      #left_laser = scan[0:284]
+      #front_laser = scan[284:384]
+      #right_laser = scan[384:667]
+      #min_left_laser = min(left_laser)
+      #min_front_laser = min(front_laser)
+      #min_right_laser = min(right_laser)
        
-      if min_front_laser <= 0.2 or min_right_laser <= 0.2 or min_left_laser <= 0.2:
-	self.linear_velocity = l_laser
-	self.angular_velocity = a_laser
-      elif (right < 0.3 and right > 0.2) or (left < 0.3 and left > 0.2) or (front < 0.3 and front > 0.2):
-	self.linear_velocity = l_sonar
-	self.angular_velocity = a_sonar
-      else: #right >= 0.4 and left >= 0.4 and right >= 0.4:
-	self.linear_velocity = l_goal
-	self.angular_velocity = a_goal
+      #if min_front_laser <= 0.2 or min_right_laser <= 0.2 or min_left_laser <= 0.2:
+	#self.linear_velocity = l_laser
+	#self.angular_velocity = a_laser
+      #elif (right < 0.3 and right > 0.2) or (left < 0.3 and left > 0.2) or (front < 0.3 and front > 0.2):
+	#self.linear_velocity = l_sonar
+	#self.angular_velocity = a_sonar
+      #else: #right >= 0.4 and left >= 0.4 and right >= 0.4:
+	#self.linear_velocity = l_goal
+	#self.angular_velocity = a_goal
 
 
       # ---------------------------------------------------------------------
