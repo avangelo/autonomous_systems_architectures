@@ -142,9 +142,6 @@ class RobotController:
       SFy = 0
       SFyl = 0
       SFyr = 0
-      for x in range(184,483):
-          SFx = SFx + scan[x]
-      SFx = SFx / 300
       for x in range(0,283):
           SFyl = SFyl + 1 / scan[x]
       SFyl = SFyl / 284
