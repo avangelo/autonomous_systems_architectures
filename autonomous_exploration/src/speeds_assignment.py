@@ -148,7 +148,7 @@ class RobotController:
       for x in range(384,667):
           SFyr = SFyr + 1 / scan[x]
       SFyr = SFyr / 284
-      SFx = min(scan[184:433])
+      SFx = min(scan[233:433])
       SFy = SFyl - SFyr
       linear = SFx / 25
       angular = SFy
