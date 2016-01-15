@@ -213,23 +213,23 @@ class RobotController:
       
 
       ##### 8 #####
-      scan = self.laser_aggregation.laser_scan
-      left_laser = scan[0:284]
-      front_laser = scan[284:384]
-      right_laser = scan[384:667]
-      min_left_laser = min(left_laser)
-      min_front_laser = min(front_laser)
-      min_right_laser = min(right_laser)
+      #scan = self.laser_aggregation.laser_scan
+      #left_laser = scan[0:284]
+      #front_laser = scan[284:384]
+      #right_laser = scan[384:667]
+      #min_left_laser = min(left_laser)
+      #min_front_laser = min(front_laser)
+      #min_right_laser = min(right_laser)
        
-      if min_front_laser <= 0.2 or min_right_laser <= 0.2 or min_left_laser <= 0.2:
-	self.linear_velocity = l_laser
-	self.angular_velocity = a_laser
-      elif (right < 0.3 and right > 0.2) or (left < 0.3 and left > 0.2) or (front < 0.3 and front > 0.2):
-	self.linear_velocity = l_sonar
-	self.angular_velocity = a_sonar
-      else: #right >= 0.4 and left >= 0.4 and right >= 0.4:
-	self.linear_velocity = l_goal
-	self.angular_velocity = a_goal
+      #if min_front_laser <= 0.2 or min_right_laser <= 0.2 or min_left_laser <= 0.2:
+	#self.linear_velocity = l_laser
+	#self.angular_velocity = a_laser
+      #elif (right < 0.3 and right > 0.2) or (left < 0.3 and left > 0.2) or (front < 0.3 and front > 0.2):
+	#self.linear_velocity = l_sonar
+	#self.angular_velocity = a_sonar
+      #else: #right >= 0.4 and left >= 0.4 and right >= 0.4:
+	#self.linear_velocity = l_goal
+	#self.angular_velocity = a_goal
 
 
       # ---------------------------------------------------------------------
@@ -290,22 +290,23 @@ class RobotController:
       #self.angular_velocity = a_goal 
 
       ##### 9 #####
-      #scan = self.laser_aggregation.laser_scan
-      #left_laser = scan[0:284]
-      #front_laser = scan[284:384]
-      #right_laser = scan[384:667]
-      #min_left_laser = min(left_laser)
-      #min_front_laser = min(front_laser)
-      #min_right_laser = min(right_laser)
-      #if min_front_laser <= 0.2 or min_right_laser <= 0.2 or min_left_laser <= 0.2:
-	#self.linear_velocity = 0.125 * l_goal + 0.125 * l_sonar + 0.75 * l_laser
-	#self.angular_velocity = 0.125 * a_goal + 0.125 * a_sonar + 0.75 * a_laser
-      #elif (right < 0.3 and right > 0.2) or (left < 0.3 and left > 0.2) or (front < 0.3 and front > 0.2):
-	#self.linear_velocity = 0.125 * l_goal + 0.75 * l_sonar + 0.125 * l_laser
-	#self.angular_velocity = 0.125 * a_goal + 0.75 * a_sonar + 0.125 * a_laser
-      #else: #elif front >= 0.3 and left >= 0.3 and right >= 0.3:
-	#self.linear_velocity = 0.75 * l_goal + 0.125 * l_sonar + 0.125 * l_laser
-	#self.angular_velocity = 0.75 * a_goal + 0.125 * a_sonar + 0.125 * a_laser
+      scan = self.laser_aggregation.laser_scan
+      left_laser = scan[0:284]
+      front_laser = scan[284:384]
+      right_laser = scan[384:667]
+      min_left_laser = min(left_laser)
+      min_front_laser = min(front_laser)
+      min_right_laser = min(right_laser)
+
+      if min_front_laser <= 0.2 or min_right_laser <= 0.2 or min_left_laser <= 0.2:
+	self.linear_velocity = 0.125 * l_goal + 0.125 * l_sonar + 0.75 * l_laser
+	self.angular_velocity = 0.125 * a_goal + 0.125 * a_sonar + 0.75 * a_laser
+      elif (right < 0.3 and right > 0.2) or (left < 0.3 and left > 0.2) or (front < 0.3 and front > 0.2):
+	self.linear_velocity = 0.125 * l_goal + 0.75 * l_sonar + 0.125 * l_laser
+	self.angular_velocity = 0.125 * a_goal + 0.75 * a_sonar + 0.125 * a_laser
+      else: #elif front >= 0.3 and left >= 0.3 and right >= 0.3:
+	self.linear_velocity = 0.75 * l_goal + 0.125 * l_sonar + 0.125 * l_laser
+	self.angular_velocity = 0.75 * a_goal + 0.125 * a_sonar + 0.125 * a_laser
       # ---------------------------------------------------------------------
 
     # Assistive functions - Do you have to call them somewhere?
