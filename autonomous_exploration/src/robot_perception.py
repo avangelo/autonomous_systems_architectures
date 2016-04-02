@@ -55,6 +55,12 @@ class RobotPerception:
         self.robot_pose['x_px'] = 0
         self.robot_pose['y_px'] = 0
 
+	ogm_topic = rospy.get_param('ogm_topic')
+	robot_trajectory_topic = rospy.get_param('robot_trajectory_topic')
+	coverage_pub_topic = rospy.get_param('coverage_pub_topic')
+        self.map_frame = rospy.get_param('map_frame')
+        self.base_footprint_frame = rospy.get_param('base_footprint_frame')
+
         # Use tf to read the robot pose
         self.listener = tf.TransformListener()
 
@@ -76,8 +82,8 @@ class RobotPerception:
             OccupancyGrid, queue_size = 10)
 
         # Get the frames from the param file
-        self.map_frame = rospy.get_param('map_frame')
-        self.base_footprint_frame = rospy.get_param('base_footprint_frame')
+        #self.map_frame = rospy.get_param('map_frame')
+        #self.base_footprint_frame = rospy.get_param('base_footprint_frame')
 
     # Getter for OGM. Must use flags since its update is asynchronous
     def getMap(self):
@@ -131,7 +137,10 @@ class RobotPerception:
         # Update the robot path. This is a python list. Since we use the path
         # only for updating the coverage, try not to add duplicates
         # Each point should be in the form of [x,y] (theta does not concern us)
-        
+
+        if [self.robot_pose['x'],self.robot_pose['y']] not in self.robot_trajectory:
+		self.robot_trajectory.append([self.robot_pose['x'],self.robot_pose['y']])
+
         # ---------------------------------------------------------------------
 
         t_path = Path()
@@ -199,6 +208,17 @@ class RobotPerception:
         # PS. Try to make it fast :)
         # PS2. Do not have coverage values on obstacles or unknown space!
         # If done correctly, the coverage will appear purple in rviz
+
+	for i in range(0,self.robot_trajectory.__len__()):
+		x_value = self.robot_trajectory[i][0]/self.resolution + abs(self.origin['x']/self.resolution)
+		y_value = self.robot_trajectory[i][1]/self.resolution + abs(self.origin['y']/self.resolution)
+		cov_part = self.coverage[x_value-20:x_value+20,y_value-20:y_value+20]
+		ogm_part = self.ogm[x_value-20:x_value+20,y_value-20:y_value+20]
+		for j in range(0,39):
+			for k in range(0,39):		
+				if ogm_part[j,k] <= 49 and ogm_part[j,k] >= 0:
+					cov_part[j,k] = 100
+		self.coverage[x_value-20:x_value+20,y_value-20:y_value+20] = cov_part
 
         # ---------------------------------------------------------------------
         # Publishing coverage ogm to see it in rviz
