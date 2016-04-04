@@ -102,11 +102,10 @@ class RobotController:
       # Adjust the linear and angular velocities using the laser scan
 
       for i in range(0,666):
-	linear -= (math.cos(-math.pi/3 + i * ((3*math.pi/2)/666)) / scan[i]**2)
-	angular += (math.sin(-math.pi/3 + i * ((3*math.pi/2)/666)) / scan[i]**2)
-
-      print linear
-      print angular
+		linear -= (math.cos((-2*math.pi)/3 + i * ((4*math.pi/3)/666)) / scan[i]**2)
+		angular -= (math.sin((-2*math.pi)/3 + i * ((4*math.pi/3)/666)) / scan[i]**2)
+		if linear < 0:
+			linear = 0
       # ---------------------------------------------------------------------
 
       return [linear, angular]
@@ -117,18 +116,18 @@ class RobotController:
       # Produce target if not existent
       if self.move_with_target == True and self.navigation.target_exists == False:
 
-	# Create the commands message
-	twist = Twist()
-	twist.linear.x = 0
-	twist.linear.y = 0
-	twist.linear.z = 0
-	twist.angular.x = 0
-	twist.angular.y = 0
-	twist.angular.z = 0
+		# Create the commands message
+		twist = Twist()
+		twist.linear.x = 0
+		twist.linear.y = 0
+		twist.linear.z = 0
+		twist.angular.x = 0
+		twist.angular.y = 0
+		twist.angular.z = 0
 
-	# Send the command
-	self.velocity_publisher.publish(twist)
-        self.navigation.selectTarget()
+		# Send the command
+		self.velocity_publisher.publish(twist)
+		self.navigation.selectTarget()
 
       # Get the submodules' speeds
       [l_sonar, a_sonar] = self.produceSpeedsSonars()
@@ -149,18 +148,18 @@ class RobotController:
       # Produce target if not existent
       if self.move_with_target == True and self.navigation.target_exists == False:
 
-	# Create the commands message
-	twist = Twist()
-	twist.linear.x = 0
-	twist.linear.y = 0
-	twist.linear.z = 0
-	twist.angular.x = 0
-	twist.angular.y = 0
-	twist.angular.z = 0
+		# Create the commands message
+		twist = Twist()
+		twist.linear.x = 0
+		twist.linear.y = 0
+		twist.linear.z = 0
+		twist.angular.x = 0
+		twist.angular.y = 0
+		twist.angular.z = 0
 
-	# Send the command
-	self.velocity_publisher.publish(twist)
-        self.navigation.selectTarget()
+		# Send the command
+		self.velocity_publisher.publish(twist)
+		self.navigation.selectTarget()
 
       # Get the submodule's speeds
       [l_sonar, a_sonar] = self.produceSpeedsSonars()
@@ -173,7 +172,7 @@ class RobotController:
       # Get the speeds using the motor schema approach
       # YOUR CODE HERE ------------------------------------------------------
       
-      sc_factor = 0.00001
+      sc_factor = 0.00002
       self.angular_velocity = a_goal + sc_factor * a_laser
       self.linear_velocity = l_goal + sc_factor * l_laser
 

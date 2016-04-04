@@ -230,33 +230,31 @@ class Navigation:
         # compute the robot velocities for the vehicle to approach the target.
         # Hint: Trigonometry is required
 	
-	max_angular = 0.35
-	max_linear = 0.15
+        max_angular = 0.3
+        max_linear = 0.15
 
         [rx, ry] = [\
-            self.robot_perception.robot_pose['x_px'] - \
-                    self.robot_perception.origin['x'] / self.robot_perception.resolution,\
-            self.robot_perception.robot_pose['y_px'] - \
-                    self.robot_perception.origin['y'] / self.robot_perception.resolution\
-                    ]
-	theta = self.robot_perception.robot_pose['th']
-	if self.subtargets:
-		st_x = self.subtargets[self.next_subtarget][0]
-		st_y = self.subtargets[self.next_subtarget][1]
-		phi = math.atan2(st_y - ry, st_x - rx)
-		ang_diff = (phi - theta)
-		if ang_diff >= 0 and ang_diff < math.pi:
-			angular = ang_diff / math.pi
-		if ang_diff > 0 and ang_diff >= math.pi:
-			angular = (ang_diff - 2 * math.pi) / math.pi
-		if ang_diff <= 0 and ang_diff > -math.pi:
-			angular = ang_diff / math.pi
-		if ang_diff < 0 and ang_diff < -math.pi:
-			angular = (ang_diff + 2 * math.pi) / math.pi
-		angular = angular * max_angular
-		linear = (1 - abs(angular))**15 * max_linear
-		print angular
-		#print linear
+			self.robot_perception.robot_pose['x_px'] - \
+					self.robot_perception.origin['x'] / self.robot_perception.resolution,\
+			self.robot_perception.robot_pose['y_px'] - \
+					self.robot_perception.origin['y'] / self.robot_perception.resolution\
+					]
+        theta = self.robot_perception.robot_pose['th']
+        if self.subtargets:
+			st_x = self.subtargets[self.next_subtarget][0]
+			st_y = self.subtargets[self.next_subtarget][1]
+			phi = math.atan2(st_y - ry, st_x - rx)
+			ang_diff = (phi - theta)
+			if ang_diff >= 0 and ang_diff < math.pi:
+				angular = ang_diff / math.pi
+			if ang_diff > 0 and ang_diff >= math.pi:
+				angular = (ang_diff - 2 * math.pi) / math.pi
+			if ang_diff <= 0 and ang_diff > -math.pi:
+				angular = ang_diff / math.pi
+			if ang_diff < 0 and ang_diff < -math.pi:
+				angular = (ang_diff + 2 * math.pi) / math.pi
+			angular = angular * max_angular
+			linear = (1 - abs(angular))**50 * max_linear
         # ---------------------------------------------------------------------
 
         return [linear, angular]
