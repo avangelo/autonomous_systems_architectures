@@ -104,8 +104,8 @@ class RobotController:
       for i in range(0,666):
 		linear -= (math.cos((-2*math.pi)/3 + i * ((4*math.pi/3)/666)) / scan[i]**2)
 		angular -= (math.sin((-2*math.pi)/3 + i * ((4*math.pi/3)/666)) / scan[i]**2)
-		if linear < 0:
-			linear = 0
+	  if linear < 0:
+		linear = 0
       # ---------------------------------------------------------------------
 
       return [linear, angular]
