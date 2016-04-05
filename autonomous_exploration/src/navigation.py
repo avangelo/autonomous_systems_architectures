@@ -231,7 +231,7 @@ class Navigation:
         # Hint: Trigonometry is required
 	
         max_angular = 0.3
-        max_linear = 0.15
+        max_linear  = 0.15
 
         [rx, ry] = [\
 			self.robot_perception.robot_pose['x_px'] - \
@@ -253,8 +253,9 @@ class Navigation:
 				angular = ang_diff / math.pi
 			if ang_diff < 0 and ang_diff < -math.pi:
 				angular = (ang_diff + 2 * math.pi) / math.pi
+			linear = (1 - abs(angular))**16 * max_linear
 			angular = angular * max_angular
-			linear = (1 - abs(angular))**50 * max_linear
+			#print "[linear,angular] = [%f,%f]" % (linear,angular)
         # ---------------------------------------------------------------------
 
         return [linear, angular]

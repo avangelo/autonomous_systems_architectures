@@ -104,8 +104,9 @@ class RobotController:
       for i in range(0,666):
 		linear -= (math.cos((-2*math.pi)/3 + i * ((4*math.pi/3)/666)) / scan[i]**2)
 		angular -= (math.sin((-2*math.pi)/3 + i * ((4*math.pi/3)/666)) / scan[i]**2)
-	  if linear < 0:
-		linear = 0
+      #if linear < 0:
+		#linear = 0
+      #print "[linear,angular] = [%f,%f]" % (linear,angular)
       # ---------------------------------------------------------------------
 
       return [linear, angular]
@@ -172,10 +173,12 @@ class RobotController:
       # Get the speeds using the motor schema approach
       # YOUR CODE HERE ------------------------------------------------------
       
-      sc_factor = 0.00002
+      sc_factor = 0.000025
       self.angular_velocity = a_goal + sc_factor * a_laser
       self.linear_velocity = l_goal + sc_factor * l_laser
-
+      #if self.linear_velocity < 0:
+		  #self.linear_velocity = 0
+      print "[linear,angular] = [%f,%f]" % (self.linear_velocity,self.angular_velocity)
       # ---------------------------------------------------------------------
 
     # Assistive functions - Do you have to call them somewhere?
