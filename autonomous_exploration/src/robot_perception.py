@@ -55,9 +55,9 @@ class RobotPerception:
         self.robot_pose['x_px'] = 0
         self.robot_pose['y_px'] = 0
 
-	ogm_topic = rospy.get_param('ogm_topic')
-	robot_trajectory_topic = rospy.get_param('robot_trajectory_topic')
-	coverage_pub_topic = rospy.get_param('coverage_pub_topic')
+        ogm_topic = rospy.get_param('ogm_topic')
+        robot_trajectory_topic = rospy.get_param('robot_trajectory_topic')
+        coverage_pub_topic = rospy.get_param('coverage_pub_topic')
         self.map_frame = rospy.get_param('map_frame')
         self.base_footprint_frame = rospy.get_param('base_footprint_frame')
 
@@ -139,7 +139,7 @@ class RobotPerception:
         # Each point should be in the form of [x,y] (theta does not concern us)
 
         if [self.robot_pose['x'],self.robot_pose['y']] not in self.robot_trajectory:
-		self.robot_trajectory.append([self.robot_pose['x'],self.robot_pose['y']])
+			self.robot_trajectory.append([self.robot_pose['x'],self.robot_pose['y']])
 
         # ---------------------------------------------------------------------
 

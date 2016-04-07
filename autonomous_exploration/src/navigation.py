@@ -57,7 +57,6 @@ class Navigation:
         if self.inner_target_exists == False or self.move_with_target == False or\
                 self.next_subtarget == len(self.subtargets):
           return
-
         # Get the robot pose in pixels
         [rx, ry] = [\
             self.robot_perception.robot_pose['x_px'] - \
@@ -143,12 +142,19 @@ class Navigation:
         print "Got the map and Coverage"
   
         # Call the target selection function to select the next best goal
-        target = self.target_selection.selectTarget(\
+        
+        #target = self.target_selection.selectTarget(\
+            #local_ogm,\
+            #local_coverage,\
+            #self.robot_perception.robot_pose)
+        #print "Navigation: New target: " + str(target)
+        
+        target = self.target_selection.selectNearestTarget(\
             local_ogm,\
             local_coverage,\
             self.robot_perception.robot_pose)
         print "Navigation: New target: " + str(target)
-
+        
         # Once the target has been found, find the path to it
         # Get the global robot pose
         g_robot_pose = self.robot_perception.getGlobalCoordinates(\
