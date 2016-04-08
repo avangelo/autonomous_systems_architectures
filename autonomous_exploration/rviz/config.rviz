@@ -3,7 +3,8 @@ Panels:
     Help Height: 78
     Name: Displays
     Property Tree Widget:
-      Expanded: ~
+      Expanded:
+        - /Path1
       Splitter Ratio: 0.647651
     Tree Height: 697
   - Class: rviz/Selection
@@ -95,7 +96,7 @@ Visualization Manager:
       Marker Topic: /as/subgoals
       Name: Current subgoals
       Namespaces:
-        as_namespace: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Axes
@@ -110,8 +111,30 @@ Visualization Manager:
       Marker Topic: /as/current_target
       Name: Current subgoal
       Namespaces:
-        as_curr_namespace: true
+        {}
       Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: visualization_marker_array
+      Name: MarkerArray
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Alpha: 1
+      Buffer Length: 1
+      Class: rviz/Path
+      Color: 25; 255; 0
+      Enabled: true
+      Line Style: Lines
+      Line Width: 0.03
+      Name: Path
+      Offset:
+        X: 0
+        Y: 0
+        Z: 0
+      Topic: /ogmpp_path_planners/path
       Value: true
   Enabled: true
   Global Options:
@@ -170,5 +193,5 @@ Window Geometry:
   Views:
     collapsed: true
   Width: 946
-  X: 944
+  X: 937
   Y: 17

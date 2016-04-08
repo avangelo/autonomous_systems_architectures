@@ -23,6 +23,7 @@ class RobotPerception:
 
         # Holds the occupancy grid map
         self.ogm = 0
+        self.ros_ogm = 0
         self.ogm_copy = 0
 
         # Holds the ogm info for copying reasons -- do not change
@@ -102,6 +103,9 @@ class RobotPerception:
       # Return the copy
       return cp
 
+    def getRosMap(self):
+      return self.ros_ogm
+
     # Getter for Coverage
     def getCoverage(self):
       return numpy.copy(self.coverage)
@@ -164,6 +168,7 @@ class RobotPerception:
         # Locking the map
         self.map_compute = True
 
+        self.ros_ogm = data
         # Reading the map pixels
         self.ogm_info = data.info
         self.ogm = numpy.zeros((data.info.width, data.info.height), dtype = numpy.int)

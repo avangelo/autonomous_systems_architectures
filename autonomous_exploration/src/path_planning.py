@@ -3,20 +3,55 @@
 import rospy
 import math
 
+from ogmpp_communications.srv import OgmppPathPlanningSrv
+from ogmpp_communications.srv import OgmppSetMapSrv
+from ogmpp_communications.srv import OgmppPathPlanningSrvRequest
+from ogmpp_communications.srv import OgmppPathPlanningSrvResponse
+from ogmpp_communications.srv import OgmppSetMapSrvRequest
+
+from geometry_msgs.msg import Point
+
 # Class that implements path planning via A*
 class PathPlanning:
 
     # Constructor
     def __init__(self):
-        pass
+        self.ogmpp_pp = rospy.ServiceProxy('/ogmpp_path_planners/plan', OgmppPathPlanningSrv)
+        self.ogmpp_map = rospy.ServiceProxy('/ogmpp_path_planners/set_map', OgmppSetMapSrv)
+        print "KOUKOU"
 
     # Function to be called from navigation
     def createPath(self, ogm, robot_pose, target_pose):
         # Debugging purposes print
         print "PathPlanning: RobotPose=" + str(robot_pose) + " Target=" + \
                 str(target_pose)
+
+        # Set the map
+        map_req = OgmppSetMapSrvRequest()
+        map_req.map = ogm
+        self.ogmpp_map(map_req)
+
+        # Ask for path
+        resp = OgmppPathPlanningSrvResponse()
+        req = OgmppPathPlanningSrvRequest()
+        req.data.begin = Point()
+        req.data.end = Point()
+
+        req.data.begin.x = robot_pose[0] * ogm.info.resolution
+        req.data.begin.y = robot_pose[1] * ogm.info.resolution
+        req.data.end.x = target_pose[0] * ogm.info.resolution
+        req.data.end.y = target_pose[1] * ogm.info.resolution
+        req.method = "uniform_prm"
+
+        resp = self.ogmpp_pp(req)
+
+        path = []
+        for p in resp.path.poses:
+            path.append([p.pose.position.x / ogm.info.resolution, p.pose.position.y / ogm.info.resolution])
+
+        return path
         # Call of the internal A* function
-        return self.aStar(ogm, robot_pose, target_pose)
+        # return self.aStar(ogm, robot_pose, target_pose)
 
     # The heuristic function for A* - simply the Eucledian distance
     def aStarHeuristic(self, p, q):

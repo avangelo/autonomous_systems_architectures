@@ -23,6 +23,7 @@ class Navigation:
         self.target_selection = TargetSelection()
         self.path_planning = PathPlanning()
 
+        print "AOUA"
         # Check if the robot moves with target or just wanders
         self.move_with_target = rospy.get_param("calculate_target")
 
@@ -138,6 +139,7 @@ class Navigation:
       
         # Gets copies of the map and coverage
         local_ogm = self.robot_perception.getMap()
+        local_ros_ogm = self.robot_perception.getRosMap()
         local_coverage = self.robot_perception.getCoverage()
         print "Got the map and Coverage"
   
@@ -163,7 +165,7 @@ class Navigation:
 
         # Need to reverse the path??
         self.path = self.path_planning.createPath(\
-            local_ogm,\
+            local_ros_ogm,\
             g_robot_pose,\
             target)
         print "Navigation: Path for target found with " + str(len(self.path)) +\

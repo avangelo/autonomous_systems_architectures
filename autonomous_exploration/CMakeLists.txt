@@ -11,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   nav_msgs
   visualization_msgs
+  ogmpp_communications
 )
 
 ###################################
@@ -32,6 +33,7 @@ catkin_package(
     geometry_msgs
     nav_msgs
     visualization_msgs
+    ogmpp_communications
 #  DEPENDS system_lib
 )
 

@@ -1,4 +1,5 @@
 <launch>
+  <include file="$(find ogmpp_launchers)/launch/ogmpp_planners.launch" />
   <include file="$(find autonomous_exploration)/launch/stdr.launch" />
   <include file="$(find autonomous_exploration)/launch/crsm.launch" />
   <node name="rviz" type="rviz" pkg="rviz" args="-d $(find autonomous_exploration)/rviz/config.rviz" />
