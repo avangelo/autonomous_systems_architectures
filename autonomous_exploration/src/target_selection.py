@@ -59,8 +59,8 @@ class TargetSelection:
 					distances.append(distc)
 
         index_min = np.argmin(distances)
-        print len(distances)
-        print index_min
+        #print len(distances)
+        #print index_min
         xt = new_data[index_min][0]
         yt = new_data[index_min][1]
         next_target = [xt, yt]

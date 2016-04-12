@@ -173,8 +173,8 @@ class Navigation:
         # Reverse the path to start from the robot
         self.path = self.path[::-1]
 
-        # Break the path to subgoals every 10 pixels (0.5m)
-        step = 10
+        # Break the path to subgoals every 1 pixels (1m = 20px)
+        step = 1
         n_subgoals = (int) (len(self.path)/step)
         self.subtargets = []
         for i in range(0, n_subgoals):
@@ -238,8 +238,8 @@ class Navigation:
         # compute the robot velocities for the vehicle to approach the target.
         # Hint: Trigonometry is required
 	
-        max_angular = 0.3
-        max_linear  = 0.15
+        max_angular = 0.35
+        max_linear  = 0.2
 
         [rx, ry] = [\
 			self.robot_perception.robot_pose['x_px'] - \

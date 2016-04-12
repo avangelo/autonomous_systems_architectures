@@ -174,8 +174,10 @@ class RobotController:
       # YOUR CODE HERE ------------------------------------------------------
       
       sc_factor = 0.00001
-      self.angular_velocity = 1.1 * a_goal + sc_factor * a_laser
-      self.linear_velocity = 1.1 * l_goal + sc_factor * l_laser
+      self.angular_velocity = a_goal + sc_factor * a_laser
+      self.linear_velocity = l_goal + sc_factor * l_laser
+      if self.linear_velocity < 0:
+		  self.linear_velocity = 0
       #if self.linear_velocity < 0:
 		  #self.linear_velocity = 0
       #print "[linear,angular] = [%f,%f]" % (self.linear_velocity,self.angular_velocity)
