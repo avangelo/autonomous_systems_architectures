@@ -173,6 +173,11 @@ class Navigation:
         # Reverse the path to start from the robot
         self.path = self.path[::-1]
 
+        # Check if path was not produced. If not, another target should be created
+        if len(self.path) == 0:
+            self.target_exists = False
+            return
+
         # Break the path to subgoals every 2 pixels (1m = 20px)
         step = 1
         print len(self.path)
