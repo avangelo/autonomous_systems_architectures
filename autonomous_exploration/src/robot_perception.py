@@ -213,7 +213,7 @@ class RobotPerception:
         # PS2. Do not have coverage values on obstacles or unknown space!
         # If done correctly, the coverage will appear purple in rviz
 
-        for i in range(0,self.robot_trajectory.__len__(),1):
+        for i in range(0,self.robot_trajectory.__len__(), 10):
 			x_value = self.robot_trajectory[i][0]/self.resolution + abs(self.origin['x']/self.resolution)
 			y_value = self.robot_trajectory[i][1]/self.resolution + abs(self.origin['y']/self.resolution)
 			cov_part = self.coverage[x_value-20:x_value+20,y_value-20:y_value+20]

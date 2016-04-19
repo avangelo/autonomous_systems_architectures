@@ -29,6 +29,7 @@ class Navigation:
 
         # Flag to check if the vehicle has a target or not
         self.target_exists = False
+        self.select_another_target = 0
         self.inner_target_exists = False
 
         # Container for the current path
@@ -150,11 +151,12 @@ class Navigation:
             #local_coverage,\
             #self.robot_perception.robot_pose)
         #print "Navigation: New target: " + str(target)
-        
+        #print "Selecting Target..."
         target = self.target_selection.selectNearestTarget(\
             local_ogm,\
             local_coverage,\
-            self.robot_perception.robot_pose)
+            self.robot_perception.robot_pose,\
+            self.select_another_target)
         print "Navigation: New target: " + str(target)
         
         # Once the target has been found, find the path to it
@@ -172,15 +174,18 @@ class Navigation:
             " points"
         # Reverse the path to start from the robot
         self.path = self.path[::-1]
-
+        #self.path = []
         # Check if path was not produced. If not, another target should be created
         if len(self.path) == 0:
             self.target_exists = False
+            self.select_another_target += 1
             return
-
+        else:
+			self.select_another_target = 0
+        
         # Break the path to subgoals every 2 pixels (1m = 20px)
         step = 1
-        print len(self.path)
+        #print len(self.path)
         n_subgoals = (int) (len(self.path)/step)
         self.subtargets = []
         for i in range(0, n_subgoals):

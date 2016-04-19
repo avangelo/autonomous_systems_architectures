@@ -173,7 +173,7 @@ class RobotController:
       # Get the speeds using the motor schema approach
       # YOUR CODE HERE ------------------------------------------------------
       
-      sc_factor = 0.00001
+      sc_factor = 0.00005
       self.angular_velocity = a_goal + sc_factor * a_laser
       self.linear_velocity = l_goal + sc_factor * l_laser
       if self.linear_velocity < 0:
