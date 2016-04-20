@@ -54,8 +54,8 @@ class TargetSelection:
         distances = []
         new_data  = []
         
-        for i in range(0, ogm.shape[0]-1, 5):
-			for j in range(0, ogm.shape[1]-1, 5):
+        for i in range(0, ogm.shape[0]-1, 3):
+			for j in range(0, ogm.shape[1]-1, 3):
 				ogm_part = ogm[i-2:i+2,j-2:j+2]
 				cov_part = coverage[i-5:i+5,j-5:j+5]
 				if ogm[i][j] < 50 and coverage[i][j] != 100 and np.all(ogm_part != 100) and np.any(cov_part == 100):

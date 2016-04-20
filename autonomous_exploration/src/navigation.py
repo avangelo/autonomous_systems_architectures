@@ -259,7 +259,7 @@ class Navigation:
 					self.robot_perception.origin['y'] / self.robot_perception.resolution\
 					]
         theta = self.robot_perception.robot_pose['th']
-        if self.subtargets and self.target_exists == True:
+        if self.subtargets and self.next_subtarget <= len(self.subtargets) - 1:
 			#print self.subtargets
 			#print self.next_subtarget
 			st_x = self.subtargets[self.next_subtarget][0]
