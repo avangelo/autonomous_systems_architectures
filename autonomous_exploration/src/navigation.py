@@ -81,7 +81,7 @@ class Navigation:
             ry - self.subtargets[self.next_subtarget][1])
 
         # Check if distance is less than 7 px (14 cm)
-        if dist < 7:
+        if dist < 5:
           print "Sub target reached!"
           self.next_subtarget += 1
 
@@ -152,7 +152,26 @@ class Navigation:
             #self.robot_perception.robot_pose)
         #print "Navigation: New target: " + str(target)
         #print "Selecting Target..."
-        target = self.target_selection.selectNearestTarget(\
+        
+        #target = self.target_selection.selectNearestUncovered(\
+            #local_ogm,\
+            #local_coverage,\
+            #self.robot_perception.robot_pose,\
+            #self.select_another_target)
+            
+        #target = self.target_selection.selectNearestUnexplored(\
+            #local_ogm,\
+            #local_coverage,\
+            #self.robot_perception.robot_pose,\
+            #self.select_another_target)
+            
+        #target = self.target_selection.selectNearestUnexploredRounded(\
+            #local_ogm,\
+            #local_coverage,\
+            #self.robot_perception.robot_pose,\
+            #self.select_another_target)
+            
+        target = self.target_selection.selectBestTopology(\
             local_ogm,\
             local_coverage,\
             self.robot_perception.robot_pose,\
@@ -184,7 +203,7 @@ class Navigation:
 			self.select_another_target = 0
         
         # Break the path to subgoals every 2 pixels (1m = 20px)
-        step = 1
+        step = 2
         #print len(self.path)
         n_subgoals = (int) (len(self.path)/step)
         self.subtargets = []

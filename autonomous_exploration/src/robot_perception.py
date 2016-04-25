@@ -14,7 +14,7 @@ class RobotPerception:
 
     # Constructor
     def __init__(self):
-
+        
         # Flags for debugging and synchronization
         self.print_robot_pose = False
         self.have_map = False
