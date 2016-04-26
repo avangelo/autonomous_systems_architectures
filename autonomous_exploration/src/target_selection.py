@@ -189,89 +189,114 @@ class TargetSelection:
                     ]
         goals = []
         topol_factor_goals = []
+        unexplored_ray_value = 200
         
         for i in range(0, ogm.shape[0]-1, 10):
             for j in range(0, ogm.shape[1]-1, 10):
-                ogm_part = ogm[i-10:i+10,j-10:j+10]
+                ogm_part = ogm[i-5:i+5,j-5:j+5]
                 dist = []
                 if ogm[i][j] < 51 and coverage[i][j] != 100 and np.all(ogm_part <= 51):
 
+                    # Ray axis +x
                     m = i
                     n = j
-                    while(ogm[m][n] <= 50):
+                    rep = 0
+                    while(ogm[m][n] < 51 and rep <= unexplored_ray_value):
                         m += 1
+                        rep += 1
                     if ogm[m][n] != 51:
                         dist = np.append(dist, [m - i])
                     else:
-                        dist = np.append(dist, 1000)
-                    
+                        dist = np.append(dist, unexplored_ray_value)
+                        
+                    # Ray axis +y
                     m = i
                     n = j
-                    while(ogm[m][n] <= 50):
+                    rep = 0
+                    while(ogm[m][n] < 51 and rep <= unexplored_ray_value):
                         n += 1
+                        rep += 1
                     if ogm[m][n] != 51:
                         dist = np.append(dist, [n - j])
                     else:
-                        dist = np.append(dist, 1000)
+                        dist = np.append(dist, unexplored_ray_value)
                     
+                    # Ray axis -x
                     m = i
                     n = j
-                    while(ogm[m][n] <= 50):
+                    rep = 0
+                    while(ogm[m][n] < 51 and rep <= unexplored_ray_value):
                         m -= 1
+                        rep += 1
                     if ogm[m][n] != 51:
                         dist = np.append(dist, [i - m])
                     else:
-                        dist = np.append(dist, 1000)
+                        dist = np.append(dist, unexplored_ray_value)
                     
+                    # Ray axis -y
                     m = i
                     n = j
-                    while(ogm[m][n] <= 50):
+                    rep = 0
+                    while(ogm[m][n] < 51 and rep <= unexplored_ray_value):
                         n -= 1
+                        rep += 1
                     if ogm[m][n] != 51:
                         dist = np.append(dist, [j - n])
                     else:
-                        dist = np.append(dist, 1000)
+                        dist = np.append(dist, unexplored_ray_value)
                     
+                    # Ray axis +x and +y
                     m = i
                     n = j
-                    while(ogm[m][n] <= 50):
-                        n += 1
+                    rep = 0
+                    while(ogm[m][n] < 51 and rep <= unexplored_ray_value):
                         m += 1
-                    if ogm[m][n] != 51:
-                        dist = np.append(dist, [math.sqrt(2 * (m - i)**2)])
-                    else:
-                        dist = np.append(dist, 1000)
-                        
-                    m = i
-                    n = j
-                    while(ogm[m][n] <= 50):
                         n += 1
-                        m -= 1
+                        rep += 1
                     if ogm[m][n] != 51:
                         dist = np.append(dist, [math.sqrt(2 * (m - i)**2)])
                     else:
-                        dist = np.append(dist, 1000)
-                        
-                    m = i
-                    n = j
-                    while(ogm[m][n] <= 50):
-                        n -= 1
-                        m += 1
-                    if ogm[m][n] != 51:
-                        dist = np.append(dist, [math.sqrt(2 * (m - i)**2)])
-                    else:
-                        dist = np.append(dist, 1000)
-                        
-                    m = i
-                    n = j
-                    while(ogm[m][n] <= 50):
-                        n -= 1
-                        m -= 1
-                    if ogm[m][n] != 51:
-                        dist = np.append(dist, [math.sqrt(2 * (m - i)**2)])
-                    else:
-                        dist = np.append(dist, 1000)
+                        dist = np.append(dist, unexplored_ray_value)
                     
+                    # Ray axis +x and -y
+                    m = i
+                    n = j
+                    rep = 0
+                    while(ogm[m][n] < 51 and rep <= unexplored_ray_value):
+                        m += 1
+                        n -= 1
+                        rep += 1
+                    if ogm[m][n] != 51:
+                        dist = np.append(dist, [math.sqrt(2 * (m - i)**2)])
+                    else:
+                        dist = np.append(dist, unexplored_ray_value)
+                    
+                    # Ray axis -x and +y
+                    m = i
+                    n = j
+                    rep = 0
+                    while(ogm[m][n] < 51 and rep <= unexplored_ray_value):
+                        m -= 1
+                        n += 1
+                        rep += 1
+                    if ogm[m][n] != 51:
+                        dist = np.append(dist, [math.sqrt(2 * (m - i)**2)])
+                    else:
+                        dist = np.append(dist, unexplored_ray_value)
+                    
+                    # Ray axis -x and -y
+                    m = i
+                    n = j
+                    rep = 0
+                    while(ogm[m][n] < 51 and rep <= unexplored_ray_value):
+                        m -= 1
+                        n -= 1
+                        rep += 1
+                    if ogm[m][n] != 51:
+                        dist = np.append(dist, [math.sqrt(2 * (m - i)**2)])
+                    else:
+                        dist = np.append(dist, unexplored_ray_value)
+
                     mean_sum_dist = np.mean(np.sum(dist))
                     topol_factor_goals.append([mean_sum_dist])
                     goals.append([i, j])
