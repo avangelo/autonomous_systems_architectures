@@ -313,3 +313,121 @@ class TargetSelection:
         next_target = [xt, yt]
         
         return next_target
+
+    def selectNextBestView2(self, ogm, coverage, robot_pose, select_another_target):
+        
+        # The next target in pixels
+        next_target = [0, 0]
+        [rx, ry] = [\
+            self.robot_perception.robot_pose['x_px'] - \
+                    self.robot_perception.origin['x'] / self.robot_perception.resolution,\
+            self.robot_perception.robot_pose['y_px'] - \
+                    self.robot_perception.origin['y'] / self.robot_perception.resolution\
+                    ]
+        possible_targets  = []
+        useful_areas = []
+        for i in range(0, ogm.shape[0]-1, 10):
+            for j in range(0, ogm.shape[1]-1, 10):
+                
+                ogm_part = ogm[i-20:i+20,j-20:j+20]
+                ogm_part_51 = np.sum(ogm_part == 51) / float(np.size(ogm_part))
+                ogm_part_100 = np.sum(ogm_part == 100) / float(np.size(ogm_part))
+                ogm_small_part = ogm[i-3:i+3,j-3:j+3]
+                
+                if ogm[i][j] < 50 and ogm_part_51 >= 0.4 and ogm_part_51 <= 0.75 and np.all(ogm_small_part != 100):
+                    useful_rays = []
+                    for w in range(0, 359, 3):
+                        w = w * 2 * math.pi / 360
+                        next_pixel = 0
+                        x = i
+                        y = j
+                        ray_length = 0
+                        while ray_length <= 10 and ogm[x][y] < 51:
+                            next_pixel += 1
+                            x = i + next_pixel * math.cos(w)
+                            y = j + next_pixel * math.sin(w)
+                            if x >= 1500 or y >= 1500:
+                                break
+                            ray_length = math.sqrt((i - x)**2 + (j - y)**2) * self.robot_perception.resolution
+                        if ogm[x][y] == 51:
+                            x_entrance = x
+                            y_entrance = y
+                            while ray_length <= 10 and ogm[x][y] == 51:
+                                next_pixel += 1
+                                x = i + next_pixel * math.cos(w)
+                                y = j + next_pixel * math.sin(w)
+                                if x >= 1500 or y >= 1500:
+                                    break
+                                ray_length = math.sqrt((i - x)**2 + (j - y)**2) * self.robot_perception.resolution
+                                useful_ray_length = math.sqrt((x_entrance - x)**2 + (y_entrance - y)**2) * self.robot_perception.resolution
+                            useful_rays.append([useful_ray_length])
+                    useful_area = np.sum(useful_rays)
+                    useful_areas.append([useful_area])
+                    possible_targets.append([i, j])
+        while(select_another_target != 0):
+            index_max = np.argmax(useful_areas)
+            useful_areas.pop(index_max)
+            possible_targets.pop(index_max)
+            select_another_target -= 1
+        
+        index_max = np.argmax(useful_areas)
+        xt = possible_targets[index_max][0]
+        yt = possible_targets[index_max][1]
+        next_target = [xt, yt]
+        
+        return next_target
+
+    def selectNextBestView(self, ogm, coverage, robot_pose, select_another_target):
+            
+            # The next target in pixels
+            next_target = [0, 0]
+            [rx, ry] = [\
+                self.robot_perception.robot_pose['x_px'] - \
+                        self.robot_perception.origin['x'] / self.robot_perception.resolution,\
+                self.robot_perception.robot_pose['y_px'] - \
+                        self.robot_perception.origin['y'] / self.robot_perception.resolution\
+                        ]
+            possible_targets  = []
+            useful_areas = []
+            for i in range(0, ogm.shape[0]-1, 5):
+                for j in range(0, ogm.shape[1]-1, 5):
+                    
+                    ogm_part = ogm[i-20:i+20,j-20:j+20]
+                    ogm_part_51 = np.sum(ogm_part == 51) / float(np.size(ogm_part))
+                    ogm_part_100 = np.sum(ogm_part == 100) / float(np.size(ogm_part))
+                    ogm_small_part = ogm[i-3:i+3,j-3:j+3]
+                    
+                    if ogm[i][j] < 50 and ogm_part_51 >= 0.3 and ogm_part_51 <= 0.5 and np.all(ogm_small_part != 100):
+                        useful_rays = []
+                        for w in range(0, 359, 10):
+                            w = w * 2 * math.pi / 360
+                            next_pixel = 0
+                            x = i
+                            y = j
+                            ray_length = 0
+                            useful_ray_length = 0
+                            while ray_length <= 10:
+                                next_pixel += 1
+                                x = i + next_pixel * math.cos(w)
+                                y = j + next_pixel * math.sin(w)
+                                if x >= 1500 or y >= 1500 or ogm[x][y] > 51:
+                                    break
+                                if ogm[x][y] == 51:
+                                    useful_ray_length += 1
+                                ray_length = math.sqrt((i - x)**2 + (j - y)**2) * self.robot_perception.resolution
+                            useful_rays.append([useful_ray_length])
+                        useful_area = np.sum(useful_rays)
+                        useful_areas.append([useful_area])
+                        possible_targets.append([i, j])
+            while(select_another_target != 0):
+                index_max = np.argmax(useful_areas)
+                useful_areas.pop(index_max)
+                possible_targets.pop(index_max)
+                select_another_target -= 1
+            
+            index_max = np.argmax(useful_areas)
+            xt = possible_targets[index_max][0]
+            yt = possible_targets[index_max][1]
+            next_target = [xt, yt]
+            
+            return next_target

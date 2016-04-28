@@ -171,7 +171,13 @@ class Navigation:
             #self.robot_perception.robot_pose,\
             #self.select_another_target)
             
-        target = self.target_selection.selectBestTopology(\
+        #target = self.target_selection.selectBestTopology(\
+            #local_ogm,\
+            #local_coverage,\
+            #self.robot_perception.robot_pose,\
+            #self.select_another_target)
+            
+        target = self.target_selection.selectNextBestView(\
             local_ogm,\
             local_coverage,\
             self.robot_perception.robot_pose,\
