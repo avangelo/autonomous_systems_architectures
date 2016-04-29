@@ -177,7 +177,7 @@ class TargetSelection:
 
 
 
-    def selectBestTopology(self, ogm, coverage, robot_pose, select_another_target):
+    def selectBestTopology2(self, ogm, coverage, robot_pose, select_another_target):
         
         # The next target in pixels
         next_target = [0, 0]
@@ -297,6 +297,58 @@ class TargetSelection:
                     else:
                         dist = np.append(dist, unexplored_ray_value)
 
+                    mean_sum_dist = np.mean(np.sum(dist))
+                    topol_factor_goals.append([mean_sum_dist])
+                    goals.append([i, j])
+        
+        while(select_another_target != 0):
+            index_min = np.argmin(topol_factor_goals)
+            topol_factor_goals.pop(index_min)
+            goals.pop(index_min)
+            select_another_target -= 1
+            
+        index_min = np.argmin(topol_factor_goals)
+        xt = goals[index_min][0]
+        yt = goals[index_min][1]
+        next_target = [xt, yt]
+        
+        return next_target
+        
+    def selectBestTopology(self, ogm, coverage, robot_pose, select_another_target):
+        
+        # The next target in pixels
+        next_target = [0, 0]
+        [rx, ry] = [\
+            self.robot_perception.robot_pose['x_px'] - \
+                    self.robot_perception.origin['x'] / self.robot_perception.resolution,\
+            self.robot_perception.robot_pose['y_px'] - \
+                    self.robot_perception.origin['y'] / self.robot_perception.resolution\
+                    ]
+        goals = []
+        topol_factor_goals = []
+        unexplored_ray_value = 200
+        max_ray = 10
+        
+        for i in range(0, ogm.shape[0]-1, 10):
+            for j in range(0, ogm.shape[1]-1, 10):
+                ogm_part = ogm[i-5:i+5,j-5:j+5]
+                dist = []
+                if ogm[i][j] < 51 and coverage[i][j] != 100 and np.all(ogm_part <= 51):
+                    
+                    for w in range(0,359, 45):
+                        x = i
+                        y = j
+                        length_ray = 0
+                        next_pixel = 0
+                        while(ogm[x][y] < 51 and length_ray <= max_ray):
+                            next_pixel += 1
+                            x = i + next_pixel * math.cos(w)
+                            y = j + next_pixel * math.sin(w)
+                            length_ray = math.sqrt((x - i)**2 + (y - j)**2) * self.robot_perception.resolution
+                        if ogm[x][y] == 51:
+                            dist = np.append(dist, max_ray / self.robot_perception.resolution)
+                        else:
+                            dist = np.append(dist, length_ray / self.robot_perception.resolution)
                     mean_sum_dist = np.mean(np.sum(dist))
                     topol_factor_goals.append([mean_sum_dist])
                     goals.append([i, j])
