@@ -50,9 +50,11 @@ class Navigation:
         # ROS Publisher for the path
         self.path_publisher = rospy.Publisher(rospy.get_param('path_pub_topic'), \
             Path, queue_size = 10)
+        
         # ROS Publisher for the subtargets
         self.subtargets_publisher = rospy.Publisher(rospy.get_param('subgoals_pub_topic'),\
             MarkerArray, queue_size = 10)
+        
         # ROS Publisher for the current target
         self.current_target_publisher = rospy.Publisher(rospy.get_param('curr_target_pub_topic'),\
             Marker, queue_size = 10)
@@ -168,8 +170,8 @@ class Navigation:
                 local_coverage,\
                 self.robot_perception.robot_pose,\
                 self.select_another_target)
-        elif self.target_selector == "nearest_unexplored_rounded":
-            target = self.target_selection.selectNearestUnexploredRounded(\
+        elif self.target_selector == "nearest_unexplored_circle":
+            target = self.target_selection.selectNearestUnexploredCircle(\
                 local_ogm,\
                 local_coverage,\
                 self.robot_perception.robot_pose,\

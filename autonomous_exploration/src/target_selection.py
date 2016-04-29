@@ -126,7 +126,7 @@ class TargetSelection:
         
         return next_target
         
-    def selectNearestUnexploredRounded(self, ogm, coverage, robot_pose, select_another_target):
+    def selectNearestUnexploredCircle(self, ogm, coverage, robot_pose, select_another_target):
         
         # The next target in pixels
         next_target = [0, 0]
