@@ -42,6 +42,10 @@ class Navigation:
 
         # Check if subgoal is reached via a timer callback
         rospy.Timer(rospy.Duration(0.10), self.checkTarget)
+        
+        # Read the target function
+        self.target_selector = rospy.get_param("target_selector")
+        print "The selected target function is " + self.target_selector
 
         # ROS Publisher for the path
         self.path_publisher = rospy.Publisher(rospy.get_param('path_pub_topic'), \
@@ -145,43 +149,45 @@ class Navigation:
         print "Got the map and Coverage"
   
         # Call the target selection function to select the next best goal
-        
-        #target = self.target_selection.selectTarget(\
-            #local_ogm,\
-            #local_coverage,\
-            #self.robot_perception.robot_pose)
-        #print "Navigation: New target: " + str(target)
-        #print "Selecting Target..."
-        
-        #target = self.target_selection.selectNearestUncovered(\
-            #local_ogm,\
-            #local_coverage,\
-            #self.robot_perception.robot_pose,\
-            #self.select_another_target)
-            
-        #target = self.target_selection.selectNearestUnexplored(\
-            #local_ogm,\
-            #local_coverage,\
-            #self.robot_perception.robot_pose,\
-            #self.select_another_target)
-            
-        #target = self.target_selection.selectNearestUnexploredRounded(\
-            #local_ogm,\
-            #local_coverage,\
-            #self.robot_perception.robot_pose,\
-            #self.select_another_target)
-            
-        #target = self.target_selection.selectBestTopology(\
-            #local_ogm,\
-            #local_coverage,\
-            #self.robot_perception.robot_pose,\
-            #self.select_another_target)
-            
-        target = self.target_selection.selectNextBestView(\
-            local_ogm,\
-            local_coverage,\
-            self.robot_perception.robot_pose,\
-            self.select_another_target)
+        # Choose target function
+        print self.target_selector
+        if self.target_selector == "random":
+            target = self.target_selection.selectTarget(\
+                local_ogm,\
+                local_coverage,\
+                self.robot_perception.robot_pose)
+        elif self.target_selector == "nearest_uncovered":
+            target = self.target_selection.selectNearestUncovered(\
+                local_ogm,\
+                local_coverage,\
+                self.robot_perception.robot_pose,\
+                self.select_another_target)
+        elif self.target_selector == "nearest_unexplored":
+            target = self.target_selection.selectNearestUnexplored(\
+                local_ogm,\
+                local_coverage,\
+                self.robot_perception.robot_pose,\
+                self.select_another_target)
+        elif self.target_selector == "nearest_unexplored_rounded":
+            target = self.target_selection.selectNearestUnexploredRounded(\
+                local_ogm,\
+                local_coverage,\
+                self.robot_perception.robot_pose,\
+                self.select_another_target)
+        elif self.target_selector == "best_topology":
+            target = self.target_selection.selectBestTopology(\
+                local_ogm,\
+                local_coverage,\
+                self.robot_perception.robot_pose,\
+                self.select_another_target)
+        elif self.target_selector == "next_best_view":
+            target = self.target_selection.selectNextBestView(\
+                local_ogm,\
+                local_coverage,\
+                self.robot_perception.robot_pose,\
+                self.select_another_target)
+        else:
+            print "Target function selected doesn't exist"
         print "Navigation: New target: " + str(target)
         
         # Once the target has been found, find the path to it
