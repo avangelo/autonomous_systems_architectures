@@ -25,9 +25,7 @@ class TargetSelection:
         # ogm and coverage variables or / and the robot pose. The easier way is to
         # randomly select points of the map until one such point can be a target
         # Of course you should try something smarter...!
-        print robot_pose
         found = False
-        print ogm[1]
         while not found:
           x_rand = random.randint(0, ogm.shape[0] - 1)
           y_rand = random.randint(0, ogm.shape[1] - 1)
@@ -75,7 +73,50 @@ class TargetSelection:
         next_target = [xt, yt]
         
         return next_target
+        
+    def selectNearestUncoveredCircle(self, ogm, coverage, robot_pose, select_another_target):
+        
+        # The next target in pixels
+        next_target = [0, 0]
+        [rx, ry] = [\
+            self.robot_perception.robot_pose['x_px'] - \
+                    self.robot_perception.origin['x'] / self.robot_perception.resolution,\
+            self.robot_perception.robot_pose['y_px'] - \
+                    self.robot_perception.origin['y'] / self.robot_perception.resolution\
+                    ]
+        distances = []
+        possible_targets  = []
+        goal_found = False
 
+        for r in range(18, 500, 1):
+            omega = 0.0
+            while not goal_found and omega < 2 * math.pi:
+                #print r , omega
+                i = int(rx + r * math.sin(omega))
+                j = int(ry + r * math.cos(omega))
+                
+                ogm_part = ogm[i-5:i+5,j-5:j+5]
+                cov_part = coverage[i-1:i+1,j-1:j+1]
+                
+                mean_ogm_part = np.mean(ogm_part)
+                var_ogm_part = np.var(ogm_part)
+                ogm_part_51 = np.sum(ogm_part == 51) / float(np.size(ogm_part))
+                
+                if coverage[i][j] != 100 and np.all(ogm_part <= 50) and np.any(cov_part == 100):
+                    if select_another_target == 0:
+                        goal_found = True
+                        next_target = [i, j]
+                    else:
+                        select_another_target -= 1
+                        goal_found = False
+                        omega = omega + 5 / float(r)
+                else:
+                    goal_found = False
+                    omega = omega + 5 / float(r)
+            if goal_found == True:
+                break
+        return next_target
+        
     def selectNearestUnexplored(self, ogm, coverage, robot_pose, select_another_target):
         
         # The next target in pixels
