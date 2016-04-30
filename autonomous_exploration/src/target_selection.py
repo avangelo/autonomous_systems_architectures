@@ -360,8 +360,8 @@ class TargetSelection:
         unexplored_ray_value = 200
         max_ray = 10
         
-        for i in range(0, ogm.shape[0]-1, 10):
-            for j in range(0, ogm.shape[1]-1, 10):
+        for i in range(0, ogm.shape[0]-1, 5):
+            for j in range(0, ogm.shape[1]-1, 5):
                 ogm_part = ogm[i-5:i+5,j-5:j+5]
                 dist = []
                 if ogm[i][j] < 51 and coverage[i][j] != 100 and np.all(ogm_part <= 51):
@@ -472,8 +472,8 @@ class TargetSelection:
                         ]
             possible_targets  = []
             useful_areas = []
-            for i in range(0, ogm.shape[0]-1, 5):
-                for j in range(0, ogm.shape[1]-1, 5):
+            for i in range(0, ogm.shape[0]-1, 10):
+                for j in range(0, ogm.shape[1]-1, 10):
                     
                     ogm_part = ogm[i-20:i+20,j-20:j+20]
                     ogm_part_51 = np.sum(ogm_part == 51) / float(np.size(ogm_part))

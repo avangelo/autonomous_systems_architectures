@@ -134,25 +134,27 @@ class Navigation:
         # Check if we have a map
         while self.robot_perception.have_map == False:
           return
+        
+        if self.select_another_target == 0:
+            
+            print "Navigation: Producing new target"
+            # We are good to continue the exploration
+            # Make this true in order not to call it again from the speeds assignment
+            self.target_exists = True
 
-        print "Navigation: Producing new target"
-        # We are good to continue the exploration
-        # Make this true in order not to call it again from the speeds assignment
-        self.target_exists = True
-
-        # Manually update the coverage field
-        self.robot_perception.updateCoverage()
-        print "Navigation: Coverage updated"
-      
+            # Manually update the coverage field
+            self.robot_perception.updateCoverage()
+            print "Navigation: Coverage updated"
+          
         # Gets copies of the map and coverage
         local_ogm = self.robot_perception.getMap()
         local_ros_ogm = self.robot_perception.getRosMap()
         local_coverage = self.robot_perception.getCoverage()
         print "Got the map and Coverage"
+        
   
         # Call the target selection function to select the next best goal
         # Choose target function
-        print self.target_selector
         if self.target_selector == "random":
             target = self.target_selection.selectTarget(\
                 local_ogm,\
@@ -214,13 +216,14 @@ class Navigation:
         # Reverse the path to start from the robot
         self.path = self.path[::-1]
         #self.path = []
+        
         # Check if path was not produced. If not, another target should be created
         if len(self.path) == 0:
             self.target_exists = False
             self.select_another_target += 1
             return
         else:
-			self.select_another_target = 0
+            self.select_another_target = 0
         
         # Break the path to subgoals every 2 pixels (1m = 20px)
         step = 2
