@@ -135,13 +135,12 @@ class Navigation:
         while self.robot_perception.have_map == False:
           return
         
+        print "Navigation: Producing new target"
+        # We are good to continue the exploration
+        # Make this true in order not to call it again from the speeds assignment
+        self.target_exists = True
+        
         if self.select_another_target == 0:
-            
-            print "Navigation: Producing new target"
-            # We are good to continue the exploration
-            # Make this true in order not to call it again from the speeds assignment
-            self.target_exists = True
-
             # Manually update the coverage field
             self.robot_perception.updateCoverage()
             print "Navigation: Coverage updated"
@@ -295,29 +294,29 @@ class Navigation:
         max_linear  = 0.2
 
         [rx, ry] = [\
-			self.robot_perception.robot_pose['x_px'] - \
-					self.robot_perception.origin['x'] / self.robot_perception.resolution,\
-			self.robot_perception.robot_pose['y_px'] - \
-					self.robot_perception.origin['y'] / self.robot_perception.resolution\
-					]
+            self.robot_perception.robot_pose['x_px'] - \
+                    self.robot_perception.origin['x'] / self.robot_perception.resolution,\
+            self.robot_perception.robot_pose['y_px'] - \
+                    self.robot_perception.origin['y'] / self.robot_perception.resolution\
+                    ]
         theta = self.robot_perception.robot_pose['th']
         if self.subtargets and self.next_subtarget <= len(self.subtargets) - 1:
-			#print self.subtargets
-			#print self.next_subtarget
-			st_x = self.subtargets[self.next_subtarget][0]
-			st_y = self.subtargets[self.next_subtarget][1]
-			phi = math.atan2(st_y - ry, st_x - rx)
-			ang_diff = (phi - theta)
-			if ang_diff >= 0 and ang_diff < math.pi:
-				angular = ang_diff / math.pi
-			if ang_diff > 0 and ang_diff >= math.pi:
-				angular = (ang_diff - 2 * math.pi) / math.pi
-			if ang_diff <= 0 and ang_diff > -math.pi:
-				angular = ang_diff / math.pi
-			if ang_diff < 0 and ang_diff < -math.pi:
-				angular = (ang_diff + 2 * math.pi) / math.pi
-			linear = (1 - abs(angular))**16 * max_linear
-			angular = angular * max_angular
+            #print self.subtargets
+            #print self.next_subtarget
+            st_x = self.subtargets[self.next_subtarget][0]
+            st_y = self.subtargets[self.next_subtarget][1]
+            phi = math.atan2(st_y - ry, st_x - rx)
+            ang_diff = (phi - theta)
+            if ang_diff >= 0 and ang_diff < math.pi:
+                angular = ang_diff / math.pi
+            if ang_diff > 0 and ang_diff >= math.pi:
+                angular = (ang_diff - 2 * math.pi) / math.pi
+            if ang_diff <= 0 and ang_diff > -math.pi:
+                angular = ang_diff / math.pi
+            if ang_diff < 0 and ang_diff < -math.pi:
+                angular = (ang_diff + 2 * math.pi) / math.pi
+            linear = (1 - abs(angular))**16 * max_linear
+            angular = angular * max_angular
 			#print "[linear,angular] = [%f,%f]" % (linear,angular)
         # ---------------------------------------------------------------------
 

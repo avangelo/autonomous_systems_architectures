@@ -13,6 +13,8 @@ class TargetSelection:
     # Constructor
     def __init__(self):
         self.robot_perception = RobotPerception()
+        self.goals_position = []
+        self.goals_value = []
 
     def selectTarget(self, ogm, coverage, robot_pose):
         
@@ -36,7 +38,7 @@ class TargetSelection:
         # ---------------------------------------------------------------------
 
         return next_target
-
+        
     def selectNearestUncovered(self, ogm, coverage, robot_pose, select_another_target):
 
         print select_another_target
@@ -87,11 +89,11 @@ class TargetSelection:
         distances = []
         possible_targets  = []
         goal_found = False
+        step_in_circle = 5
 
         for r in range(18, 500, 1):
             omega = 0.0
-            while not goal_found and omega < 2 * math.pi:
-                #print r , omega
+            while goal_found == False and omega < 2 * math.pi:
                 i = int(rx + r * math.sin(omega))
                 j = int(ry + r * math.cos(omega))
                 
@@ -109,10 +111,10 @@ class TargetSelection:
                     else:
                         select_another_target -= 1
                         goal_found = False
-                        omega = omega + 5 / float(r)
+                        omega = omega + step_in_circle / float(r)
                 else:
                     goal_found = False
-                    omega = omega + 5 / float(r)
+                    omega = omega + step_in_circle / float(r)
             if goal_found == True:
                 break
         return next_target
@@ -207,7 +209,7 @@ class TargetSelection:
             if goal_found == True:
                 break
         return next_target
-
+        
     def selectBestTopology2(self, ogm, coverage, robot_pose, select_another_target):
         
         # The next target in pixels
@@ -355,48 +357,49 @@ class TargetSelection:
             self.robot_perception.robot_pose['y_px'] - \
                     self.robot_perception.origin['y'] / self.robot_perception.resolution\
                     ]
-        goals = []
-        topol_factor_goals = []
         unexplored_ray_value = 200
         max_ray = 10
         
-        for i in range(0, ogm.shape[0]-1, 5):
-            for j in range(0, ogm.shape[1]-1, 5):
-                ogm_part = ogm[i-5:i+5,j-5:j+5]
-                dist = []
-                if ogm[i][j] < 51 and coverage[i][j] != 100 and np.all(ogm_part <= 51):
-                    
-                    for w in range(0,359, 45):
-                        x = i
-                        y = j
-                        length_ray = 0
-                        next_pixel = 0
-                        while(ogm[x][y] < 51 and length_ray <= max_ray):
-                            next_pixel += 1
-                            x = i + next_pixel * math.cos(w)
-                            y = j + next_pixel * math.sin(w)
-                            length_ray = math.sqrt((x - i)**2 + (y - j)**2) * self.robot_perception.resolution
-                        if ogm[x][y] == 51:
-                            dist = np.append(dist, max_ray / self.robot_perception.resolution)
-                        else:
-                            dist = np.append(dist, length_ray / self.robot_perception.resolution)
-                    mean_sum_dist = np.mean(np.sum(dist))
-                    topol_factor_goals.append([mean_sum_dist])
-                    goals.append([i, j])
-        
-        while(select_another_target != 0):
-            index_min = np.argmin(topol_factor_goals)
-            topol_factor_goals.pop(index_min)
-            goals.pop(index_min)
-            select_another_target -= 1
+        if select_another_target == 0:
+            self.goals_position = []
+            self.goals_value = []
+            for i in range(0, ogm.shape[0]-1, 5):
+                for j in range(0, ogm.shape[1]-1, 5):
+                    ogm_part = ogm[i-5:i+5,j-5:j+5]
+                    dist = []
+                    if ogm[i][j] < 51 and coverage[i][j] != 100 and np.all(ogm_part <= 51):
+                        
+                        for w in range(0,359, 45):
+                            x = i
+                            y = j
+                            length_ray = 0
+                            next_pixel = 0
+                            while(ogm[x][y] < 51 and length_ray <= max_ray):
+                                next_pixel += 1
+                                x = i + next_pixel * math.cos(w)
+                                y = j + next_pixel * math.sin(w)
+                                length_ray = math.sqrt((x - i)**2 + (y - j)**2) * self.robot_perception.resolution
+                            if ogm[x][y] == 51:
+                                dist = np.append(dist, max_ray / self.robot_perception.resolution)
+                            else:
+                                dist = np.append(dist, length_ray / self.robot_perception.resolution)
+                        mean_sum_dist = np.mean(np.sum(dist))
+                        self.goals_value.append([mean_sum_dist])
+                        self.goals_position.append([i, j])
+        else:
+            while(select_another_target != 0):
+                index_min = np.argmin(self.goals_value)
+                self.goals_value.pop(index_min)
+                self.goals_position.pop(index_min)
+                select_another_target -= 1
             
-        index_min = np.argmin(topol_factor_goals)
-        xt = goals[index_min][0]
-        yt = goals[index_min][1]
+        index_min = np.argmin(self.goals_value)
+        xt = self.goals_position[index_min][0]
+        yt = self.goals_position[index_min][1]
         next_target = [xt, yt]
         
         return next_target
-
+        
     def selectNextBestView2(self, ogm, coverage, robot_pose, select_another_target):
         
         # The next target in pixels
@@ -459,28 +462,31 @@ class TargetSelection:
         next_target = [xt, yt]
         
         return next_target
-
+        
     def selectNextBestView(self, ogm, coverage, robot_pose, select_another_target):
             
-            # The next target in pixels
-            next_target = [0, 0]
-            [rx, ry] = [\
-                self.robot_perception.robot_pose['x_px'] - \
-                        self.robot_perception.origin['x'] / self.robot_perception.resolution,\
-                self.robot_perception.robot_pose['y_px'] - \
-                        self.robot_perception.origin['y'] / self.robot_perception.resolution\
-                        ]
-            possible_targets  = []
-            useful_areas = []
-            for i in range(0, ogm.shape[0]-1, 10):
-                for j in range(0, ogm.shape[1]-1, 10):
+        # The next target in pixels
+        next_target = [0, 0]
+        [rx, ry] = [\
+            self.robot_perception.robot_pose['x_px'] - \
+                    self.robot_perception.origin['x'] / self.robot_perception.resolution,\
+            self.robot_perception.robot_pose['y_px'] - \
+                    self.robot_perception.origin['y'] / self.robot_perception.resolution\
+                    ]
+        possible_targets  = []
+        useful_areas = []
+        if select_another_target == 0:
+            self.goals_position = []
+            self.goals_value = []
+            for i in range(0, ogm.shape[0]-1, 5):
+                for j in range(0, ogm.shape[1]-1, 5):
                     
                     ogm_part = ogm[i-20:i+20,j-20:j+20]
                     ogm_part_51 = np.sum(ogm_part == 51) / float(np.size(ogm_part))
                     ogm_part_100 = np.sum(ogm_part == 100) / float(np.size(ogm_part))
                     ogm_small_part = ogm[i-3:i+3,j-3:j+3]
                     
-                    if ogm[i][j] < 50 and ogm_part_51 >= 0.3 and ogm_part_51 <= 0.5 and np.all(ogm_small_part != 100):
+                    if ogm[i][j] < 50 and ogm_part_51 >= 0.3 and ogm_part_51 <= 0.7 and np.all(ogm_small_part != 100):
                         useful_rays = []
                         for w in range(0, 359, 10):
                             w = w * 2 * math.pi / 360
@@ -500,17 +506,19 @@ class TargetSelection:
                                 ray_length = math.sqrt((i - x)**2 + (j - y)**2) * self.robot_perception.resolution
                             useful_rays.append([useful_ray_length])
                         useful_area = np.sum(useful_rays)
-                        useful_areas.append([useful_area])
-                        possible_targets.append([i, j])
+                        self.goals_value.append([useful_area])
+                        self.goals_position.append([i, j])
+        else:
             while(select_another_target != 0):
-                index_max = np.argmax(useful_areas)
-                useful_areas.pop(index_max)
-                possible_targets.pop(index_max)
+                print "Select another target"
+                index_max = np.argmax(self.goals_value)
+                self.goals_value.pop(index_max)
+                self.goals_position.pop(index_max)
                 select_another_target -= 1
-            
-            index_max = np.argmax(useful_areas)
-            xt = possible_targets[index_max][0]
-            yt = possible_targets[index_max][1]
-            next_target = [xt, yt]
-            
-            return next_target
+        
+        index_max = np.argmax(self.goals_value)
+        xt = self.goals_position[index_max][0]
+        yt = self.goals_position[index_max][1]
+        next_target = [xt, yt]
+        
+        return next_target
