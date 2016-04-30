@@ -148,12 +148,6 @@ class TargetSelection:
                     possible_targets.append([i,j])
                     distc = math.sqrt((rx - i)**2 + (ry - j)**2)
                     distances.append(distc)
-                    #print var_ogm_part
-                    #print ogm_part
-                    #print np.sum(ogm_part == 51)
-                    #print np.size(ogm_part)
-                    #print ogm_part_51
-        #print possible_targets
         while(select_another_target != 0):
             index_min = np.argmin(distances)
             distances.pop(index_min)
@@ -203,9 +197,7 @@ class TargetSelection:
                     if select_another_target == 0:
                         goal_found = True
                         next_target = [i, j]
-                        print ogm_part
                     else:
-                        print "Another Target!!!!!"
                         select_another_target -= 1
                         goal_found = False
                         omega = omega + 5 / float(r)
@@ -215,8 +207,6 @@ class TargetSelection:
             if goal_found == True:
                 break
         return next_target
-
-
 
     def selectBestTopology2(self, ogm, coverage, robot_pose, select_another_target):
         
