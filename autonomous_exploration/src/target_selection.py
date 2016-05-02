@@ -6,6 +6,8 @@ import math
 import numpy as np
 from timeit import default_timer as timer
 from robot_perception import RobotPerception
+from visualization_msgs.msg import Marker
+from visualization_msgs.msg import MarkerArray
 
 # Class for selecting the next best target
 class TargetSelection:
@@ -478,24 +480,24 @@ class TargetSelection:
         if select_another_target == 0:
             self.goals_position = []
             self.goals_value = []
-            for i in range(0, ogm.shape[0]-1, 5):
-                for j in range(0, ogm.shape[1]-1, 5):
+            for i in range(0, ogm.shape[0]-1, 10):
+                for j in range(0, ogm.shape[1]-1, 10):
                     
-                    ogm_part = ogm[i-20:i+20,j-20:j+20]
+                    ogm_part = ogm[i-10:i+10,j-10:j+10]
                     ogm_part_51 = np.sum(ogm_part == 51) / float(np.size(ogm_part))
                     ogm_part_100 = np.sum(ogm_part == 100) / float(np.size(ogm_part))
-                    ogm_small_part = ogm[i-3:i+3,j-3:j+3]
+                    ogm_small_part = ogm[i-5:i+5,j-5:j+5]
                     
-                    if ogm[i][j] < 50 and ogm_part_51 >= 0.3 and ogm_part_51 <= 0.7 and np.all(ogm_small_part != 100):
+                    if ogm[i][j] < 51 and ogm_part_51 >= 0.2 and ogm_part_51 <= 0.8 and np.all(ogm_small_part != 100):
                         useful_rays = []
-                        for w in range(0, 359, 10):
+                        for w in range(0, 359, 5):
                             w = w * 2 * math.pi / 360
                             next_pixel = 0
                             x = i
                             y = j
                             ray_length = 0
                             useful_ray_length = 0
-                            while ray_length <= 10:
+                            while ray_length <= 5:
                                 next_pixel += 1
                                 x = i + next_pixel * math.cos(w)
                                 y = j + next_pixel * math.sin(w)
@@ -515,7 +517,9 @@ class TargetSelection:
                 self.goals_value.pop(index_max)
                 self.goals_position.pop(index_max)
                 select_another_target -= 1
-        
+                
+        print len(self.goals_position)
+        print self.goals_position
         index_max = np.argmax(self.goals_value)
         xt = self.goals_position[index_max][0]
         yt = self.goals_position[index_max][1]

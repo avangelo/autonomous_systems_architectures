@@ -117,18 +117,18 @@ class RobotController:
       # Produce target if not existent
       if self.move_with_target == True and self.navigation.target_exists == False:
 
-		# Create the commands message
-		twist = Twist()
-		twist.linear.x = 0
-		twist.linear.y = 0
-		twist.linear.z = 0
-		twist.angular.x = 0
-		twist.angular.y = 0
-		twist.angular.z = 0
+        # Create the commands message
+        twist = Twist()
+        twist.linear.x = 0
+        twist.linear.y = 0
+        twist.linear.z = 0
+        twist.angular.x = 0
+        twist.angular.y = 0
+        twist.angular.z = 0
 
-		# Send the command
-		self.velocity_publisher.publish(twist)
-		self.navigation.selectTarget()
+        # Send the command
+        self.velocity_publisher.publish(twist)
+        self.navigation.selectTarget()
 
       # Get the submodules' speeds
       [l_sonar, a_sonar] = self.produceSpeedsSonars()
@@ -149,18 +149,18 @@ class RobotController:
       # Produce target if not existent
       if self.move_with_target == True and self.navigation.target_exists == False:
 
-		# Create the commands message
-		twist = Twist()
-		twist.linear.x = 0
-		twist.linear.y = 0
-		twist.linear.z = 0
-		twist.angular.x = 0
-		twist.angular.y = 0
-		twist.angular.z = 0
+        # Create the commands message
+        twist = Twist()
+        twist.linear.x = 0
+        twist.linear.y = 0
+        twist.linear.z = 0
+        twist.angular.x = 0
+        twist.angular.y = 0
+        twist.angular.z = 0
 
-		# Send the command
-		self.velocity_publisher.publish(twist)
-		self.navigation.selectTarget()
+        # Send the command
+        self.velocity_publisher.publish(twist)
+        self.navigation.selectTarget()
 
       # Get the submodule's speeds
       [l_sonar, a_sonar] = self.produceSpeedsSonars()
@@ -174,12 +174,12 @@ class RobotController:
       # YOUR CODE HERE ------------------------------------------------------
       
       sc_factor = 0.00002
-      self.angular_velocity = 2 * (a_goal + sc_factor * a_laser)
-      self.linear_velocity = 2 * (l_goal + sc_factor * l_laser)
+      self.angular_velocity = (a_goal + sc_factor * a_laser)
+      self.linear_velocity = (l_goal + sc_factor * l_laser)
       if self.linear_velocity < 0:
-		  self.linear_velocity = 0
+            self.linear_velocity = 0
       #if self.linear_velocity < 0:
-		  #self.linear_velocity = 0
+            #self.linear_velocity = 0
       #print "[linear,angular] = [%f,%f]" % (self.linear_velocity,self.angular_velocity)
       # ---------------------------------------------------------------------
 

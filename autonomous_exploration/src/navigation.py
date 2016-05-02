@@ -225,7 +225,7 @@ class Navigation:
             self.select_another_target = 0
         
         # Break the path to subgoals every 2 pixels (1m = 20px)
-        step = 2
+        step = 1
         #print len(self.path)
         n_subgoals = (int) (len(self.path)/step)
         self.subtargets = []
@@ -290,8 +290,8 @@ class Navigation:
         # compute the robot velocities for the vehicle to approach the target.
         # Hint: Trigonometry is required
     
-        max_angular = 0.35
-        max_linear  = 0.2
+        max_angular = 0.45
+        max_linear  = 0.3
 
         [rx, ry] = [\
             self.robot_perception.robot_pose['x_px'] - \

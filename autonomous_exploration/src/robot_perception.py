@@ -143,7 +143,7 @@ class RobotPerception:
         # Each point should be in the form of [x,y] (theta does not concern us)
 
         if [self.robot_pose['x'],self.robot_pose['y']] not in self.robot_trajectory:
-			self.robot_trajectory.append([self.robot_pose['x'],self.robot_pose['y']])
+            self.robot_trajectory.append([self.robot_pose['x'],self.robot_pose['y']])
         # ---------------------------------------------------------------------
 
         t_path = Path()
@@ -214,15 +214,15 @@ class RobotPerception:
         # If done correctly, the coverage will appear purple in rviz
 
         for i in range(0,self.robot_trajectory.__len__(), 10):
-			x_value = self.robot_trajectory[i][0]/self.resolution + abs(self.origin['x']/self.resolution)
-			y_value = self.robot_trajectory[i][1]/self.resolution + abs(self.origin['y']/self.resolution)
-			cov_part = self.coverage[x_value-20:x_value+20,y_value-20:y_value+20]
-			ogm_part = self.ogm[x_value-20:x_value+20,y_value-20:y_value+20]
-			for j in range(0,39):
-				for k in range(0,39):
-					if ogm_part[j,k] <= 49 and ogm_part[j,k] >= 0:
-						cov_part[j,k] = 100
-			self.coverage[x_value-20:x_value+20,y_value-20:y_value+20] = cov_part
+            x_value = self.robot_trajectory[i][0]/self.resolution + abs(self.origin['x']/self.resolution)
+            y_value = self.robot_trajectory[i][1]/self.resolution + abs(self.origin['y']/self.resolution)
+            cov_part = self.coverage[x_value-20:x_value+20,y_value-20:y_value+20]
+            ogm_part = self.ogm[x_value-20:x_value+20,y_value-20:y_value+20]
+            for j in range(0,39):
+                for k in range(0,39):
+                    if ogm_part[j,k] <= 49 and ogm_part[j,k] >= 0:
+                        cov_part[j,k] = 100
+            self.coverage[x_value-20:x_value+20,y_value-20:y_value+20] = cov_part
 
         # ---------------------------------------------------------------------
         # Publishing coverage ogm to see it in rviz
