@@ -17,6 +17,11 @@ class TargetSelection:
         self.robot_perception = RobotPerception()
         self.goals_position = []
         self.goals_value = []
+        self.omega = 0.0
+        self.radius = 0
+        # ROS Publisher for the subtargets
+        self.subtargets_publisher = rospy.Publisher(rospy.get_param('goals_pub_topic'),\
+            MarkerArray, queue_size = 10)
 
     def selectTarget(self, ogm, coverage, robot_pose):
         
@@ -91,10 +96,14 @@ class TargetSelection:
         distances = []
         possible_targets  = []
         goal_found = False
-        step_in_circle = 5
+        step_in_circle = 2
+        
+        if select_another_target == 0:
+            self.radius = 19
+            self.omega = 0.0
 
-        for r in range(18, 500, 1):
-            omega = 0.0
+        for r in range(self.radius, 500, 1):
+            omega = self.omega
             while goal_found == False and omega < 2 * math.pi:
                 i = int(rx + r * math.sin(omega))
                 j = int(ry + r * math.cos(omega))
@@ -107,13 +116,18 @@ class TargetSelection:
                 ogm_part_51 = np.sum(ogm_part == 51) / float(np.size(ogm_part))
                 
                 if coverage[i][j] != 100 and np.all(ogm_part <= 50) and np.any(cov_part == 100):
-                    if select_another_target == 0:
-                        goal_found = True
-                        next_target = [i, j]
-                    else:
-                        select_another_target -= 1
-                        goal_found = False
-                        omega = omega + step_in_circle / float(r)
+                    goal_found = True
+                    next_target = [i, j]
+                    self.radius = r
+                    self.omega = omega + step_in_circle / float(r)
+                    
+                    #if select_another_target == 0:
+                        #goal_found = True
+                        #next_target = [i, j]
+                    #else:
+                        #select_another_target -= 1
+                        #goal_found = False
+                        #omega = omega + step_in_circle / float(r)
                 else:
                     goal_found = False
                     omega = omega + step_in_circle / float(r)
@@ -178,11 +192,17 @@ class TargetSelection:
         distances = []
         possible_targets  = []
         goal_found = False
-
-        for r in range(20, 500, 1):
-            omega = 0.0
-            while not goal_found and omega < 2 * math.pi:
-                #print r , omega
+        step_in_circle = 2
+        
+        if select_another_target == 0:
+            self.radius = 19
+            self.omega = 0.0
+        
+        for r in range(self.radius, 500, 1):
+            omega = self.omega
+            #print r
+            while goal_found == False and omega < 2 * math.pi:
+                #print omega ,
                 i = int(rx + r * math.sin(omega))
                 j = int(ry + r * math.cos(omega))
                 
@@ -196,18 +216,24 @@ class TargetSelection:
                 if ogm[i][j] < 50 and np.all(ogm_part <= 51) \
                                   and np.all(cov_part != 100) \
                                   and ogm_part_51 >= 0.1 \
-                                  and ogm_part_51 <= 0.5: # \
+                                  and ogm_part_51 <= 0.9: 
                                   #and var_ogm_part >= (10)**2: # and mean_ogm_part >= 30 and mean_ogm_part <= 35
-                    if select_another_target == 0:
-                        goal_found = True
-                        next_target = [i, j]
-                    else:
-                        select_another_target -= 1
-                        goal_found = False
-                        omega = omega + 5 / float(r)
+                    goal_found = True
+                    next_target = [i, j]
+                    self.radius = r
+                    self.omega = omega + step_in_circle / float(r)
+                    
+                    #if select_another_target == 0:
+                        #goal_found = True
+                        #next_target = [i, j]
+                    #else:
+                        #select_another_target -= 1
+                        #goal_found = False
+                        #omega = omega + 5 / float(r)
+                    
                 else:
                     goal_found = False
-                    omega = omega + 5 / float(r)
+                    omega = omega + step_in_circle / float(r)
             if goal_found == True:
                 break
         return next_target
@@ -394,7 +420,33 @@ class TargetSelection:
                 self.goals_value.pop(index_min)
                 self.goals_position.pop(index_min)
                 select_another_target -= 1
-            
+        
+        # Publish the targets for visualization purposes
+        ros_goals = MarkerArray()
+        for s in self.goals_position:
+            st = Marker()
+            st.header.frame_id = "map"
+            st.ns = 'as_namespace'
+            st.id = count
+            st.header.stamp = rospy.Time(0)
+            st.type = 2 # sphere
+            st.action = 0 # add
+            st.pose.position.x = s[0] * self.robot_perception.resolution + \
+                    self.robot_perception.origin['x']
+            st.pose.position.y = s[1] * self.robot_perception.resolution + \
+                    self.robot_perception.origin['y']
+
+            st.color.r = 0.8
+            st.color.g = 0.8
+            st.color.b = 0
+            st.color.a = 0.8
+            st.scale.x = 0.2
+            st.scale.y = 0.2
+            st.scale.z = 0.2
+            ros_goals.markers.append(st)
+
+        self.subtargets_publisher.publish(ros_goals)
+        
         index_min = np.argmin(self.goals_value)
         xt = self.goals_position[index_min][0]
         yt = self.goals_position[index_min][1]

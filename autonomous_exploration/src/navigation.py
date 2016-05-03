@@ -219,7 +219,7 @@ class Navigation:
         # Check if path was not produced. If not, another target should be created
         if len(self.path) == 0:
             self.target_exists = False
-            self.select_another_target += 1
+            self.select_another_target = 1
             return
         else:
             self.select_another_target = 0

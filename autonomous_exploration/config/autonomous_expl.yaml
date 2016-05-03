@@ -10,7 +10,7 @@ velocities_architecture: 'motor_schema'
 #                  'nearest_unexplored_circle'
 #                  'best_topology'
 #                  'next_best_view'
-target_selector: 'next_best_view'
+target_selector: 'nearest_unexplored_circle'
 
 # Debugging purposes
 print_velocities: False
@@ -36,6 +36,7 @@ robot_trajectory_topic: '/as/robot/trajectory'
 path_pub_topic: '/as/path'
 subgoals_pub_topic: '/as/subgoals'
 curr_target_pub_topic: '/as/current_target'
+goals_pub_topic: '/as/goals'
 
 # Frames
 map_frame: '/map'
