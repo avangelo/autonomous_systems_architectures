@@ -423,11 +423,14 @@ class TargetSelection:
         
         # Publish the targets for visualization purposes
         ros_goals = MarkerArray()
+        print self.goals_position
+        c = 0
         for s in self.goals_position:
+            c += 1
             st = Marker()
             st.header.frame_id = "map"
             st.ns = 'as_namespace'
-            st.id = count
+            st.id = c
             st.header.stamp = rospy.Time(0)
             st.type = 2 # sphere
             st.action = 0 # add
@@ -553,7 +556,7 @@ class TargetSelection:
                                 next_pixel += 1
                                 x = i + next_pixel * math.cos(w)
                                 y = j + next_pixel * math.sin(w)
-                                if x >= 1500 or y >= 1500 or ogm[x][y] > 51:
+                                if x >= ogm.shape[0]-1 or y >= ogm.shape[1]-1 or ogm[x][y] > 51:
                                     break
                                 if ogm[x][y] == 51:
                                     useful_ray_length += 1
@@ -572,6 +575,36 @@ class TargetSelection:
                 
         print len(self.goals_position)
         print self.goals_position
+
+        # Publish the targets for visualization purposes
+        ros_goals = MarkerArray()
+        print self.goals_position
+        c = 0
+        for s in self.goals_position:
+            c += 1
+            st = Marker()
+            st.header.frame_id = "map"
+            st.ns = 'as_namespace'
+            st.id = c
+            st.header.stamp = rospy.Time(0)
+            st.type = 2 # sphere
+            st.action = 0 # add
+            st.pose.position.x = s[0] * self.robot_perception.resolution + \
+                    self.robot_perception.origin['x']
+            st.pose.position.y = s[1] * self.robot_perception.resolution + \
+                    self.robot_perception.origin['y']
+
+            st.color.r = 0.8
+            st.color.g = 0.8
+            st.color.b = 0
+            st.color.a = 0.8
+            st.scale.x = 0.2
+            st.scale.y = 0.2
+            st.scale.z = 0.2
+            ros_goals.markers.append(st)
+
+        self.subtargets_publisher.publish(ros_goals)
+
         index_max = np.argmax(self.goals_value)
         xt = self.goals_position[index_max][0]
         yt = self.goals_position[index_max][1]

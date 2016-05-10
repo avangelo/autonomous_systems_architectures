@@ -290,8 +290,8 @@ class Navigation:
         # compute the robot velocities for the vehicle to approach the target.
         # Hint: Trigonometry is required
     
-        max_angular = 0.45
-        max_linear  = 0.3
+        max_angular = 0.5
+        max_linear  = 0.5
 
         [rx, ry] = [\
             self.robot_perception.robot_pose['x_px'] - \
