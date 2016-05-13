@@ -19,9 +19,44 @@ class TargetSelection:
         self.goals_value = []
         self.omega = 0.0
         self.radius = 0
+        self.brushfire_matrix = np.zeros((1500, 1500))
+        self.brushfire_matrix.fill(-1)
+        self.current_step_brushfire_positions = []
+        self.next_step_brushfire_positions = []
         # ROS Publisher for the subtargets
         self.subtargets_publisher = rospy.Publisher(rospy.get_param('goals_pub_topic'),\
             MarkerArray, queue_size = 10)
+
+    def show_targets(self):
+    
+    # Publish the targets for visualization purposes
+        ros_goals = MarkerArray()
+        print self.goals_position
+        c = 0
+        for s in self.goals_position:
+            c += 1
+            st = Marker()
+            st.header.frame_id = "map"
+            st.ns = 'as_namespace'
+            st.id = c
+            st.header.stamp = rospy.Time(0)
+            st.type = 2 # sphere
+            st.action = 0 # add
+            st.pose.position.x = s[0] * self.robot_perception.resolution + \
+                    self.robot_perception.origin['x']
+            st.pose.position.y = s[1] * self.robot_perception.resolution + \
+                    self.robot_perception.origin['y']
+
+            st.color.r = 0.8
+            st.color.g = 0.8
+            st.color.b = 0
+            st.color.a = 0.8
+            st.scale.x = 0.2
+            st.scale.y = 0.2
+            st.scale.z = 0.2
+            ros_goals.markers.append(st)
+
+        self.subtargets_publisher.publish(ros_goals)
 
     def selectTarget(self, ogm, coverage, robot_pose):
         
@@ -66,23 +101,82 @@ class TargetSelection:
                 ogm_part = ogm[i-3:i+3,j-3:j+3]
                 cov_part = coverage[i-3:i+3,j-3:j+3]
                 if coverage[i][j] != 100 and np.all(ogm_part <= 50) and np.any(cov_part == 100):
-                    new_data.append([i,j])
+                    self.goals_position.append([i,j])
                     distc = math.sqrt((rx - i)**2 + (ry - j)**2)
-                    distances.append(distc)
+                    self.goals_value.append(distc)
         
         while(select_another_target != 0):
-            index_min = np.argmin(distances)
-            distances.pop(index_min)
-            new_data.pop(index_min)
+            index_min = np.argmin(self.goals_value)
+            self.goals_value.pop(index_min)
+            self.goals_position.pop(index_min)
             select_another_target -= 1
+            
+        # Publish the targets for visualization purposes
+        self.show_targets()
         
-        index_min = np.argmin(distances)
-        xt = new_data[index_min][0]
-        yt = new_data[index_min][1]
+        index_min = np.argmin(self.goals_value)
+        xt = self.goals_position[index_min][0]
+        yt = self.goals_position[index_min][1]
         next_target = [xt, yt]
         
         return next_target
         
+    def selectNearestUncoveredBrush(self, ogm, coverage, robot_pose, select_another_target):
+        
+        # The next target in pixels
+        next_target = [0, 0]
+        [rx, ry] = [\
+            self.robot_perception.robot_pose['x_px'] - \
+                    self.robot_perception.origin['x'] / self.robot_perception.resolution,\
+            self.robot_perception.robot_pose['y_px'] - \
+                    self.robot_perception.origin['y'] / self.robot_perception.resolution\
+                    ]
+        rx = int(rx)
+        ry = int(ry)
+        print rx, ry
+        goal_found = False
+        if select_another_target == 0:
+            #print 10
+            self.current_brushfire_positions_step = []
+            self.next_step_brushfire_positions = []
+            self.brushfire_matrix.fill(-1)
+            self.brushfire_matrix[rx][ry] = 0
+            brushfire_step = 1
+            self.current_step_brushfire_positions.append([rx, ry])
+        
+        while(goal_found == False):
+            if len(self.next_step_brushfire_positions) == 0:
+                #print 1
+                for position in self.current_step_brushfire_positions:
+                    for w in range(0, 359, 45):
+                        x = position[0] + int(round(math.cos(w * math.pi / 180)))
+                        y = position[1] + int(round(math.sin(w * math.pi / 180)))
+                        if self.brushfire_matrix[x][y] == -1 and ogm[x][y] < 51:
+                            self.brushfire_matrix[x][y] = brushfire_step
+                            self.next_step_brushfire_positions.append([x, y])
+                    print self.brushfire_matrix[rx-7:rx+7, ry-7:ry+7]
+                self.current_step_brushfire_positions = self.next_step_brushfire_positions
+            brushfire_position_test = self.next_step_brushfire_positions
+            if brushfire_step == 3:
+                sdfa
+            for position in self.next_step_brushfire_positions:
+                brushfire_position_test.remove(position)
+                i = position[0]
+                j = position[1]
+                ogm_part = ogm[i-3:i+3,j-3:j+3]
+                cov_part = coverage[i-3:i+3,j-3:j+3]
+                
+                if coverage[i][j] != 100 and np.all(ogm_part <= 50) and np.any(cov_part == 100):
+                    next_target = [i, j]
+                    goal_found = True
+                    self.next_step_brushfire_positions = brushfire_position_test
+                    print 3
+                    break
+            #print 2
+            self.next_step_brushfire_positions = []
+            brushfire_step += 1
+        return next_target
+
     def selectNearestUncoveredCircle(self, ogm, coverage, robot_pose, select_another_target):
         
         # The next target in pixels
@@ -93,8 +187,7 @@ class TargetSelection:
             self.robot_perception.robot_pose['y_px'] - \
                     self.robot_perception.origin['y'] / self.robot_perception.resolution\
                     ]
-        distances = []
-        possible_targets  = []
+        
         goal_found = False
         step_in_circle = 2
         
@@ -163,18 +256,22 @@ class TargetSelection:
                                   and ogm_part_51 >= 0.2 \
                                   and ogm_part_51 <= 0.7 \
                                   : #and var_ogm_part >= (10)**2 and np.any(ogm_part == 51) and and mean_ogm_part >= 30 and mean_ogm_part <= 35
-                    possible_targets.append([i,j])
+                    self.goals_position.append([i,j])
                     distc = math.sqrt((rx - i)**2 + (ry - j)**2)
-                    distances.append(distc)
+                    self.goals_value.append(distc)
+        
         while(select_another_target != 0):
-            index_min = np.argmin(distances)
-            distances.pop(index_min)
-            possible_targets.pop(index_min)
+            index_min = np.argmin(self.goals_value)
+            self.goals_value.pop(index_min)
+            self.goals_position.pop(index_min)
             select_another_target -= 1
         
-        index_min = np.argmin(distances)
-        xt = possible_targets[index_min][0]
-        yt = possible_targets[index_min][1]
+        # Publish the targets for visualization purposes
+        self.show_targets()
+        
+        index_min = np.argmin(self.goals_value)
+        xt = self.goals_position[index_min][0]
+        yt = self.goals_position[index_min][1]
         next_target = [xt, yt]
         
         return next_target
@@ -422,33 +519,7 @@ class TargetSelection:
                 select_another_target -= 1
         
         # Publish the targets for visualization purposes
-        ros_goals = MarkerArray()
-        print self.goals_position
-        c = 0
-        for s in self.goals_position:
-            c += 1
-            st = Marker()
-            st.header.frame_id = "map"
-            st.ns = 'as_namespace'
-            st.id = c
-            st.header.stamp = rospy.Time(0)
-            st.type = 2 # sphere
-            st.action = 0 # add
-            st.pose.position.x = s[0] * self.robot_perception.resolution + \
-                    self.robot_perception.origin['x']
-            st.pose.position.y = s[1] * self.robot_perception.resolution + \
-                    self.robot_perception.origin['y']
-
-            st.color.r = 0.8
-            st.color.g = 0.8
-            st.color.b = 0
-            st.color.a = 0.8
-            st.scale.x = 0.2
-            st.scale.y = 0.2
-            st.scale.z = 0.2
-            ros_goals.markers.append(st)
-
-        self.subtargets_publisher.publish(ros_goals)
+        self.show_targets()
         
         index_min = np.argmin(self.goals_value)
         xt = self.goals_position[index_min][0]
@@ -577,33 +648,7 @@ class TargetSelection:
         print self.goals_position
 
         # Publish the targets for visualization purposes
-        ros_goals = MarkerArray()
-        print self.goals_position
-        c = 0
-        for s in self.goals_position:
-            c += 1
-            st = Marker()
-            st.header.frame_id = "map"
-            st.ns = 'as_namespace'
-            st.id = c
-            st.header.stamp = rospy.Time(0)
-            st.type = 2 # sphere
-            st.action = 0 # add
-            st.pose.position.x = s[0] * self.robot_perception.resolution + \
-                    self.robot_perception.origin['x']
-            st.pose.position.y = s[1] * self.robot_perception.resolution + \
-                    self.robot_perception.origin['y']
-
-            st.color.r = 0.8
-            st.color.g = 0.8
-            st.color.b = 0
-            st.color.a = 0.8
-            st.scale.x = 0.2
-            st.scale.y = 0.2
-            st.scale.z = 0.2
-            ros_goals.markers.append(st)
-
-        self.subtargets_publisher.publish(ros_goals)
+        self.show_targets()
 
         index_max = np.argmax(self.goals_value)
         xt = self.goals_position[index_max][0]
