@@ -183,6 +183,12 @@ class Navigation:
                 local_coverage,\
                 self.robot_perception.robot_pose,\
                 self.select_another_target)
+        elif self.target_selector == "nearest_unexplored_brush":
+            target = self.target_selection.selectNearestUnexploredBrush(\
+                local_ogm,\
+                local_coverage,\
+                self.robot_perception.robot_pose,\
+                self.select_another_target)
         elif self.target_selector == "nearest_unexplored_circle":
             target = self.target_selection.selectNearestUnexploredCircle(\
                 local_ogm,\

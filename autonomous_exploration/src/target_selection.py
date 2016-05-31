@@ -23,6 +23,7 @@ class TargetSelection:
         self.brushfire_matrix.fill(-1)
         self.current_step_brushfire_positions = []
         self.next_step_brushfire_positions = []
+        self.brushfire_step = 0
         # ROS Publisher for the subtargets
         self.subtargets_publisher = rospy.Publisher(rospy.get_param('goals_pub_topic'),\
             MarkerArray, queue_size = 10)
@@ -120,7 +121,7 @@ class TargetSelection:
         next_target = [xt, yt]
         
         return next_target
-        
+    
     def selectNearestUncoveredBrush(self, ogm, coverage, robot_pose, select_another_target):
         
         # The next target in pixels
@@ -135,30 +136,35 @@ class TargetSelection:
         ry = int(ry)
         print rx, ry
         goal_found = False
+        
         if select_another_target == 0:
             #print 10
-            self.current_brushfire_positions_step = []
+            self.current_step_brushfire_positions = []
             self.next_step_brushfire_positions = []
             self.brushfire_matrix.fill(-1)
             self.brushfire_matrix[rx][ry] = 0
-            brushfire_step = 1
+            self.brushfire_step = 0
             self.current_step_brushfire_positions.append([rx, ry])
         
         while(goal_found == False):
             if len(self.next_step_brushfire_positions) == 0:
+                self.brushfire_step += 1
                 #print 1
                 for position in self.current_step_brushfire_positions:
                     for w in range(0, 359, 45):
                         x = position[0] + int(round(math.cos(w * math.pi / 180)))
                         y = position[1] + int(round(math.sin(w * math.pi / 180)))
                         if self.brushfire_matrix[x][y] == -1 and ogm[x][y] < 51:
-                            self.brushfire_matrix[x][y] = brushfire_step
+                            self.brushfire_matrix[x][y] = self.brushfire_step
                             self.next_step_brushfire_positions.append([x, y])
-                    print self.brushfire_matrix[rx-7:rx+7, ry-7:ry+7]
-                self.current_step_brushfire_positions = self.next_step_brushfire_positions
-            brushfire_position_test = self.next_step_brushfire_positions
-            if brushfire_step == 3:
-                sdfa
+                    #print self.brushfire_matrix[rx-7:rx+7, ry-7:ry+7]
+                self.current_step_brushfire_positions = self.next_step_brushfire_positions[:]
+            
+            brushfire_position_test = self.next_step_brushfire_positions[:]
+            
+            #if brushfire_step == 5:
+                #print asdf
+            
             for position in self.next_step_brushfire_positions:
                 brushfire_position_test.remove(position)
                 i = position[0]
@@ -169,12 +175,13 @@ class TargetSelection:
                 if coverage[i][j] != 100 and np.all(ogm_part <= 50) and np.any(cov_part == 100):
                     next_target = [i, j]
                     goal_found = True
-                    self.next_step_brushfire_positions = brushfire_position_test
-                    print 3
+                    #self.next_step_brushfire_positions = brushfire_position_test
+                    print brushfire_position_test
                     break
-            #print 2
-            self.next_step_brushfire_positions = []
-            brushfire_step += 1
+                    
+            self.next_step_brushfire_positions = brushfire_position_test
+        #print ogm[i-7:i+7, j-7:j+7]
+        print self.brushfire_matrix[rx-7:rx+7, ry-7:ry+7]
         return next_target
 
     def selectNearestUncoveredCircle(self, ogm, coverage, robot_pose, select_another_target):
@@ -275,7 +282,77 @@ class TargetSelection:
         next_target = [xt, yt]
         
         return next_target
+    
+    def selectNearestUnexploredBrush(self, ogm, coverage, robot_pose, select_another_target):
         
+        # The next target in pixels
+        next_target = [0, 0]
+        [rx, ry] = [\
+            self.robot_perception.robot_pose['x_px'] - \
+                    self.robot_perception.origin['x'] / self.robot_perception.resolution,\
+            self.robot_perception.robot_pose['y_px'] - \
+                    self.robot_perception.origin['y'] / self.robot_perception.resolution\
+                    ]
+        rx = int(rx)
+        ry = int(ry)
+        print rx, ry
+        goal_found = False
+        
+        if select_another_target == 0:
+            #print 10
+            self.current_step_brushfire_positions = []
+            self.next_step_brushfire_positions = []
+            self.brushfire_matrix.fill(-1)
+            self.brushfire_matrix[rx][ry] = 0
+            self.brushfire_step = 0
+            self.current_step_brushfire_positions.append([rx, ry])
+        
+        while(goal_found == False):
+            if len(self.next_step_brushfire_positions) == 0:
+                self.brushfire_step += 1
+                #print 1
+                for position in self.current_step_brushfire_positions:
+                    for w in range(0, 359, 45):
+                        x = position[0] + int(round(math.cos(w * math.pi / 180)))
+                        y = position[1] + int(round(math.sin(w * math.pi / 180)))
+                        if self.brushfire_matrix[x][y] == -1 and ogm[x][y] < 51:
+                            self.brushfire_matrix[x][y] = self.brushfire_step
+                            self.next_step_brushfire_positions.append([x, y])
+                    #print self.brushfire_matrix[rx-7:rx+7, ry-7:ry+7]
+                self.current_step_brushfire_positions = self.next_step_brushfire_positions[:]
+            
+            brushfire_position_test = self.next_step_brushfire_positions[:]
+            
+            #if brushfire_step == 5:
+                #print asdf
+            
+            for position in self.next_step_brushfire_positions:
+                brushfire_position_test.remove(position)
+                i = position[0]
+                j = position[1]
+                ogm_part = ogm[i-6:i+6,j-6:j+6]
+                cov_part = coverage[i-6:i+6,j-6:j+6]
+                
+                mean_ogm_part = np.mean(ogm_part)
+                var_ogm_part = np.var(ogm_part)
+                ogm_part_51 = np.sum(ogm_part == 51) / float(np.size(ogm_part))
+                
+                if ogm[i][j] <= 50 and np.all(ogm_part <= 51) \
+                                   and np.all(cov_part != 100) \
+                                   and ogm_part_51 >= 0.2 \
+                                   and ogm_part_51 <= 0.7 \
+                                  :
+                    next_target = [i, j]
+                    goal_found = True
+                    #self.next_step_brushfire_positions = brushfire_position_test
+                    #print brushfire_position_test
+                    break
+                    
+            self.next_step_brushfire_positions = brushfire_position_test
+        #print ogm[i-7:i+7, j-7:j+7]
+        #print self.brushfire_matrix[rx-7:rx+7, ry-7:ry+7]
+        return next_target
+    
     def selectNearestUnexploredCircle(self, ogm, coverage, robot_pose, select_another_target):
         
         # The next target in pixels
