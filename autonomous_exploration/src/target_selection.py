@@ -134,7 +134,7 @@ class TargetSelection:
                     ]
         rx = int(rx)
         ry = int(ry)
-        print rx, ry
+        #print rx, ry
         goal_found = False
         
         if select_another_target == 0:
@@ -176,12 +176,12 @@ class TargetSelection:
                     next_target = [i, j]
                     goal_found = True
                     #self.next_step_brushfire_positions = brushfire_position_test
-                    print brushfire_position_test
+                    #print brushfire_position_test
                     break
                     
             self.next_step_brushfire_positions = brushfire_position_test
         #print ogm[i-7:i+7, j-7:j+7]
-        print self.brushfire_matrix[rx-7:rx+7, ry-7:ry+7]
+        #print self.brushfire_matrix[rx-7:rx+7, ry-7:ry+7]
         return next_target
 
     def selectNearestUncoveredCircle(self, ogm, coverage, robot_pose, select_another_target):

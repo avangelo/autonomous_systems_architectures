@@ -3,6 +3,7 @@
 import rospy
 import math
 import time
+import numpy as np
 from robot_perception import RobotPerception
 from target_selection import TargetSelection
 from path_planning import PathPlanning
@@ -58,8 +59,8 @@ class Navigation:
         # ROS Publisher for the current target
         self.current_target_publisher = rospy.Publisher(rospy.get_param('curr_target_pub_topic'),\
             Marker, queue_size = 10)
-
-
+            
+        
     def checkTarget(self, event):
         # Check if we have a target or if the robot just wanders
         if self.inner_target_exists == False or self.move_with_target == False or\
@@ -312,6 +313,7 @@ class Navigation:
                     self.robot_perception.origin['y'] / self.robot_perception.resolution\
                     ]
         theta = self.robot_perception.robot_pose['th']
+        
         if self.subtargets and self.next_subtarget <= len(self.subtargets) - 1:
             #print self.subtargets
             #print self.next_subtarget
@@ -334,3 +336,4 @@ class Navigation:
 
         return [linear, angular]
 
+    

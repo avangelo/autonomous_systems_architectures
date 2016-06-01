@@ -81,7 +81,12 @@ class RobotPerception:
         coverage_pub_topic = rospy.get_param('coverage_pub_topic')
         self.coverage_publisher = rospy.Publisher(coverage_pub_topic, \
             OccupancyGrid, queue_size = 10)
-
+        
+        # Read Cell size
+        self.cell_size = rospy.get_param('cell_size')
+        self.cell_matrix = numpy.zeros((1,1))
+        self.current_cell = []
+        
         # Get the frames from the param file
         #self.map_frame = rospy.get_param('map_frame')
         #self.base_footprint_frame = rospy.get_param('base_footprint_frame')
@@ -155,6 +160,35 @@ class RobotPerception:
             ps.pose.position.y = p[1]
             t_path.poses.append(ps)
         self.robot_trajectory_publisher.publish(t_path)
+        
+        
+        # Calculating Revisiting Cost
+        
+        [rx, ry] = [\
+            self.robot_pose['x_px'] - \
+                    self.origin['x'] / self.resolution,\
+            self.robot_pose['y_px'] - \
+                    self.origin['y'] / self.resolution\
+                    ]
+        if self.have_map == True and numpy.all(self.cell_matrix == 0):
+            self.cell_matrix = numpy.zeros((self.ogm.shape[0] / self.cell_size, self.ogm.shape[0] / self.cell_size))
+            self.current_cell = [int(rx / self.cell_size), int(ry / self.cell_size)]
+            self.cell_matrix[self.current_cell[0], self.current_cell[1]] = 1
+            print self.cell_matrix[37:49, 36:49]
+        
+        if (rx % self.cell_size) / self.cell_size > 0.1 and (rx % self.cell_size) / self.cell_size < 0.9 \
+            and (ry % self.cell_size) / self.cell_size > 0.1 and (ry % self.cell_size) / self.cell_size < 0.9:
+            
+            if self.have_map == True and numpy.any(self.cell_matrix != 0):
+            
+                x_cell = int(rx / self.cell_size)
+                y_cell = int(ry / self.cell_size)
+                
+                if [x_cell, y_cell] != self.current_cell:
+                    self.cell_matrix[x_cell, y_cell] += 1
+                    self.current_cell = [x_cell, y_cell]
+                    print rx, ry
+                    print self.cell_matrix[37:49, 36:49]
 
     # Getting the occupancy grid map
     def readMap(self, data):
@@ -250,4 +284,3 @@ class RobotPerception:
             p[0] - self.origin['x'],\
             p[1] - self.origin['y']\
             ]
-

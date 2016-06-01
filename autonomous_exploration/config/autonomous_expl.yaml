@@ -12,7 +12,7 @@ velocities_architecture: 'motor_schema'
 #                  'nearest_unexplored_circle'
 #                  'best_topology'
 #                  'next_best_view'
-target_selector: 'nearest_unexplored_brush'
+target_selector: 'nearest_uncovered_brush'
 
 # Debugging purposes
 print_velocities: False
@@ -43,3 +43,6 @@ goals_pub_topic: '/as/goals'
 # Frames
 map_frame: '/map'
 base_footprint_frame: '/base_footprint'
+
+# Cell Size 10, 20, 30, 50
+cell_size: 20
