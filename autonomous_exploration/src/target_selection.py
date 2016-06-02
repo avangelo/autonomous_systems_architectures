@@ -24,6 +24,7 @@ class TargetSelection:
         self.current_step_brushfire_positions = []
         self.next_step_brushfire_positions = []
         self.brushfire_step = 0
+        
         # ROS Publisher for the subtargets
         self.subtargets_publisher = rospy.Publisher(rospy.get_param('goals_pub_topic'),\
             MarkerArray, queue_size = 10)
@@ -49,8 +50,8 @@ class TargetSelection:
                     self.robot_perception.origin['y']
 
             st.color.r = 0.8
-            st.color.g = 0.8
-            st.color.b = 0
+            st.color.g = 0
+            st.color.b = 0.5
             st.color.a = 0.8
             st.scale.x = 0.2
             st.scale.y = 0.2
@@ -560,18 +561,18 @@ class TargetSelection:
                     self.robot_perception.origin['y'] / self.robot_perception.resolution\
                     ]
         unexplored_ray_value = 200
-        max_ray = 10
+        max_ray = 5
         
         if select_another_target == 0:
             self.goals_position = []
             self.goals_value = []
-            for i in range(0, ogm.shape[0]-1, 5):
-                for j in range(0, ogm.shape[1]-1, 5):
+            for i in range(0, ogm.shape[0]-1, 10):
+                for j in range(0, ogm.shape[1]-1, 10):
                     ogm_part = ogm[i-5:i+5,j-5:j+5]
                     dist = []
                     if ogm[i][j] < 51 and coverage[i][j] != 100 and np.all(ogm_part <= 51):
                         
-                        for w in range(0,359, 45):
+                        for w in range(0, 359, 45):
                             x = i
                             y = j
                             length_ray = 0
@@ -585,7 +586,11 @@ class TargetSelection:
                                 dist = np.append(dist, max_ray / self.robot_perception.resolution)
                             else:
                                 dist = np.append(dist, length_ray / self.robot_perception.resolution)
+                            print dist
                         mean_sum_dist = np.mean(np.sum(dist))
+                        print i, j
+                        print mean_sum_dist
+                        wait = input("PRESS 1 TO CONTINUE.")
                         self.goals_value.append([mean_sum_dist])
                         self.goals_position.append([i, j])
         else:
@@ -683,17 +688,18 @@ class TargetSelection:
         if select_another_target == 0:
             self.goals_position = []
             self.goals_value = []
-            for i in range(0, ogm.shape[0]-1, 10):
-                for j in range(0, ogm.shape[1]-1, 10):
+            for i in range(0, ogm.shape[0]-1, 5):
+                for j in range(0, ogm.shape[1]-1, 5):
                     
                     ogm_part = ogm[i-10:i+10,j-10:j+10]
                     ogm_part_51 = np.sum(ogm_part == 51) / float(np.size(ogm_part))
                     ogm_part_100 = np.sum(ogm_part == 100) / float(np.size(ogm_part))
-                    ogm_small_part = ogm[i-5:i+5,j-5:j+5]
+                    ogm_small_part = ogm[i-7:i+7,j-7:j+7]
                     
-                    if ogm[i][j] < 51 and ogm_part_51 >= 0.2 and ogm_part_51 <= 0.8 and np.all(ogm_small_part != 100):
+                    if ogm[i][j] < 51 and ogm_part_51 > 0.1 and ogm_part_51 < 0.3 and np.all(ogm_small_part <= 51):
                         useful_rays = []
-                        for w in range(0, 359, 5):
+                        #print i, j
+                        for w in range(0, 359, 3):
                             w = w * 2 * math.pi / 360
                             next_pixel = 0
                             x = i
@@ -701,18 +707,24 @@ class TargetSelection:
                             ray_length = 0
                             useful_ray_length = 0
                             while ray_length <= 5:
-                                next_pixel += 1
+                                next_pixel += 2
                                 x = i + next_pixel * math.cos(w)
                                 y = j + next_pixel * math.sin(w)
+                                #print x, y
                                 if x >= ogm.shape[0]-1 or y >= ogm.shape[1]-1 or ogm[x][y] > 51:
                                     break
                                 if ogm[x][y] == 51:
                                     useful_ray_length += 1
                                 ray_length = math.sqrt((i - x)**2 + (j - y)**2) * self.robot_perception.resolution
+                                #print ray_length
+                            #wait = input("PRESS 1 TO CONTINUE.")
                             useful_rays.append([useful_ray_length])
                         useful_area = np.sum(useful_rays)
-                        self.goals_value.append([useful_area])
-                        self.goals_position.append([i, j])
+                        if useful_area > 50:
+                            #print useful_area
+                            #wait = input("PRESS 1 TO CONTINUE.")
+                            self.goals_value.append([useful_area])
+                            self.goals_position.append([i, j])
         else:
             while(select_another_target != 0):
                 print "Select another target"
