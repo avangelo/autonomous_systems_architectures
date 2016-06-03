@@ -33,7 +33,7 @@ class TargetSelection:
     
     # Publish the targets for visualization purposes
         ros_goals = MarkerArray()
-        print self.goals_position
+        #print self.goals_position
         c = 0
         for s in self.goals_position:
             c += 1
@@ -160,11 +160,11 @@ class TargetSelection:
                             self.next_step_brushfire_positions.append([x, y])
                     #print self.brushfire_matrix[rx-7:rx+7, ry-7:ry+7]
                 self.current_step_brushfire_positions = self.next_step_brushfire_positions[:]
-            
             brushfire_position_test = self.next_step_brushfire_positions[:]
             
-            #if brushfire_step == 5:
-                #print asdf
+            if self.next_step_brushfire_positions == []:
+                next_target = [0, 0]
+                break
             
             for position in self.next_step_brushfire_positions:
                 brushfire_position_test.remove(position)
@@ -321,32 +321,29 @@ class TargetSelection:
                             self.next_step_brushfire_positions.append([x, y])
                     #print self.brushfire_matrix[rx-7:rx+7, ry-7:ry+7]
                 self.current_step_brushfire_positions = self.next_step_brushfire_positions[:]
-            
             brushfire_position_test = self.next_step_brushfire_positions[:]
             
-            #if brushfire_step == 5:
-                #print asdf
+            if self.next_step_brushfire_positions == []:
+                next_target = [0, 0]
+                break
             
             for position in self.next_step_brushfire_positions:
                 brushfire_position_test.remove(position)
                 i = position[0]
                 j = position[1]
-                ogm_part = ogm[i-6:i+6,j-6:j+6]
-                cov_part = coverage[i-6:i+6,j-6:j+6]
-                
-                mean_ogm_part = np.mean(ogm_part)
-                var_ogm_part = np.var(ogm_part)
+                ogm_part = ogm[i-9:i+9,j-9:j+9]
+                ogm_small_part = ogm[i-3:i+3,j-3:j+3]
                 ogm_part_51 = np.sum(ogm_part == 51) / float(np.size(ogm_part))
                 
-                if ogm[i][j] <= 50 and np.all(ogm_part <= 51) \
-                                   and np.all(cov_part != 100) \
-                                   and ogm_part_51 >= 0.2 \
-                                   and ogm_part_51 <= 0.7 \
-                                  :
+                if ogm[i][j] < 51  and np.all(ogm_small_part < 51) and coverage[i][j] != 100 and ogm_part_51 > 0.3 and ogm_part_51 < 0.5:
                     next_target = [i, j]
                     goal_found = True
                     #self.next_step_brushfire_positions = brushfire_position_test
                     #print brushfire_position_test
+                    self.goals_position.append([i, j])
+                    # Publish the targets for visualization purposes
+                    self.show_targets()
+                    print ogm_part
                     break
                     
             self.next_step_brushfire_positions = brushfire_position_test
@@ -571,8 +568,8 @@ class TargetSelection:
                     ogm_part = ogm[i-5:i+5,j-5:j+5]
                     dist = []
                     if ogm[i][j] < 51 and coverage[i][j] != 100 and np.all(ogm_part <= 51):
-                        
                         for w in range(0, 359, 45):
+                            w = w * 2 * math.pi / 360
                             x = i
                             y = j
                             length_ray = 0
@@ -586,15 +583,17 @@ class TargetSelection:
                                 dist = np.append(dist, max_ray / self.robot_perception.resolution)
                             else:
                                 dist = np.append(dist, length_ray / self.robot_perception.resolution)
-                            print dist
-                        mean_sum_dist = np.mean(np.sum(dist))
-                        print i, j
-                        print mean_sum_dist
-                        wait = input("PRESS 1 TO CONTINUE.")
-                        self.goals_value.append([mean_sum_dist])
+                        #print dist
+                        sum_dist = np.sum(dist)
+                        #print i, j
+                        #print mean_sum_dist
+                        #wait = input("PRESS 1 TO CONTINUE.")
+                        self.goals_value.append([sum_dist])
                         self.goals_position.append([i, j])
         else:
             while(select_another_target != 0):
+                if self.goals_value == []:
+                    break
                 index_min = np.argmin(self.goals_value)
                 self.goals_value.pop(index_min)
                 self.goals_position.pop(index_min)
@@ -603,10 +602,13 @@ class TargetSelection:
         # Publish the targets for visualization purposes
         self.show_targets()
         
-        index_min = np.argmin(self.goals_value)
-        xt = self.goals_position[index_min][0]
-        yt = self.goals_position[index_min][1]
-        next_target = [xt, yt]
+        if self.goals_value == []:
+            next_target = [0, 0]
+        else:
+            index_min = np.argmin(self.goals_value)
+            xt = self.goals_position[index_min][0]
+            yt = self.goals_position[index_min][1]
+            next_target = [xt, yt]
         
         return next_target
         
@@ -688,18 +690,19 @@ class TargetSelection:
         if select_another_target == 0:
             self.goals_position = []
             self.goals_value = []
-            for i in range(0, ogm.shape[0]-1, 5):
-                for j in range(0, ogm.shape[1]-1, 5):
+            for i in range(0, ogm.shape[0]-1, 7):
+                for j in range(0, ogm.shape[1]-1, 7):
                     
                     ogm_part = ogm[i-10:i+10,j-10:j+10]
                     ogm_part_51 = np.sum(ogm_part == 51) / float(np.size(ogm_part))
-                    ogm_part_100 = np.sum(ogm_part == 100) / float(np.size(ogm_part))
+                    #ogm_part_100 = np.sum(ogm_part == 100) / float(np.size(ogm_part))
                     ogm_small_part = ogm[i-7:i+7,j-7:j+7]
+                    #cov_part = coverage[i-3:i+3,j-3:j+3]
                     
-                    if ogm[i][j] < 51 and ogm_part_51 > 0.1 and ogm_part_51 < 0.3 and np.all(ogm_small_part <= 51):
+                    if ogm[i][j] < 51 and ogm_part_51 > 0.1 and ogm_part_51 < 0.3 and np.all(ogm_small_part <= 51) and coverage[i][j] != 100:
                         useful_rays = []
                         #print i, j
-                        for w in range(0, 359, 3):
+                        for w in range(0, 359, 5):
                             w = w * 2 * math.pi / 360
                             next_pixel = 0
                             x = i
@@ -728,6 +731,8 @@ class TargetSelection:
         else:
             while(select_another_target != 0):
                 print "Select another target"
+                if self.goals_value == []:
+                    break
                 index_max = np.argmax(self.goals_value)
                 self.goals_value.pop(index_max)
                 self.goals_position.pop(index_max)
@@ -738,10 +743,13 @@ class TargetSelection:
 
         # Publish the targets for visualization purposes
         self.show_targets()
-
-        index_max = np.argmax(self.goals_value)
-        xt = self.goals_position[index_max][0]
-        yt = self.goals_position[index_max][1]
-        next_target = [xt, yt]
         
+        if self.goals_value == []:
+            next_target = [0, 0]
+        else:
+            index_max = np.argmax(self.goals_value)
+            xt = self.goals_position[index_max][0]
+            yt = self.goals_position[index_max][1]
+            next_target = [xt, yt]
+            
         return next_target

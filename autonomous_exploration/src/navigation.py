@@ -210,7 +210,11 @@ class Navigation:
                 self.select_another_target)
         else:
             print "Target function selected doesn't exist"
-        print "Navigation: New target: " + str(target)
+        if target == [0,0]:
+            print "Can't find new target. The exploration is complete"
+            return
+        else:
+            print "Navigation: New target: " + str(target)
         
         # Once the target has been found, find the path to it
         # Get the global robot pose

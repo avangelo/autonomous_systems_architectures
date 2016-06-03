@@ -174,7 +174,7 @@ class RobotPerception:
             self.cell_matrix = numpy.zeros((self.ogm.shape[0] / self.cell_size, self.ogm.shape[0] / self.cell_size))
             self.current_cell = [int(rx / self.cell_size), int(ry / self.cell_size)]
             self.cell_matrix[self.current_cell[0], self.current_cell[1]] = 1
-            print self.cell_matrix[37:49, 36:49]
+            #print self.cell_matrix[37:49, 36:49]
         
         if (rx % self.cell_size) / self.cell_size > 0.1 and (rx % self.cell_size) / self.cell_size < 0.9 \
             and (ry % self.cell_size) / self.cell_size > 0.1 and (ry % self.cell_size) / self.cell_size < 0.9:
@@ -187,8 +187,8 @@ class RobotPerception:
                 if [x_cell, y_cell] != self.current_cell:
                     self.cell_matrix[x_cell, y_cell] += 1
                     self.current_cell = [x_cell, y_cell]
-                    print rx, ry
-                    print self.cell_matrix[37:49, 36:49]
+                    #print rx, ry
+                    #print self.cell_matrix[37:49, 36:49]
 
     # Getting the occupancy grid map
     def readMap(self, data):
