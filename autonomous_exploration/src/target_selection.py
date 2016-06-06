@@ -170,8 +170,8 @@ class TargetSelection:
                 brushfire_position_test.remove(position)
                 i = position[0]
                 j = position[1]
-                ogm_part = ogm[i-3:i+3,j-3:j+3]
-                cov_part = coverage[i-3:i+3,j-3:j+3]
+                ogm_part = ogm[i-6:i+6,j-6:j+6]
+                cov_part = coverage[i-6:i+6,j-6:j+6]
                 
                 if coverage[i][j] != 100 and np.all(ogm_part <= 50) and np.any(cov_part == 100):
                     next_target = [i, j]
@@ -331,11 +331,12 @@ class TargetSelection:
                 brushfire_position_test.remove(position)
                 i = position[0]
                 j = position[1]
-                ogm_part = ogm[i-9:i+9,j-9:j+9]
-                ogm_small_part = ogm[i-3:i+3,j-3:j+3]
+                ogm_part = ogm[i-6:i+6,j-6:j+6]
                 ogm_part_51 = np.sum(ogm_part == 51) / float(np.size(ogm_part))
+                ogm_small_part = ogm[i-2:i+2,j-2:j+2]
                 
-                if ogm[i][j] < 51  and np.all(ogm_small_part < 51) and coverage[i][j] != 100 and ogm_part_51 > 0.3 and ogm_part_51 < 0.5:
+                #if ogm_part_51 > 0.2 and ogm_part_51 < 0.7 and np.all(ogm_part <= 51) and np.all(ogm_small_part < 51) and coverage[i][j] != 100:
+                if ogm_part_51 > 0.1 and np.all(ogm_part <= 51) and np.all(ogm_small_part < 51) and coverage[i][j] != 100:
                     next_target = [i, j]
                     goal_found = True
                     #self.next_step_brushfire_positions = brushfire_position_test
@@ -690,16 +691,19 @@ class TargetSelection:
         if select_another_target == 0:
             self.goals_position = []
             self.goals_value = []
-            for i in range(0, ogm.shape[0]-1, 7):
-                for j in range(0, ogm.shape[1]-1, 7):
+            for i in range(0, ogm.shape[0]-1, 6):
+                for j in range(0, ogm.shape[1]-1, 6):
                     
-                    ogm_part = ogm[i-10:i+10,j-10:j+10]
+                    #ogm_part = ogm[i-10:i+10,j-10:j+10]
+                    #ogm_small_part = ogm[i-7:i+7,j-7:j+7]
+                    
+                    ogm_part = ogm[i-6:i+6,j-6:j+6]
+                    ogm_small_part = ogm[i-3:i+3,j-3:j+3]
                     ogm_part_51 = np.sum(ogm_part == 51) / float(np.size(ogm_part))
-                    #ogm_part_100 = np.sum(ogm_part == 100) / float(np.size(ogm_part))
-                    ogm_small_part = ogm[i-7:i+7,j-7:j+7]
-                    #cov_part = coverage[i-3:i+3,j-3:j+3]
                     
-                    if ogm[i][j] < 51 and ogm_part_51 > 0.1 and ogm_part_51 < 0.3 and np.all(ogm_small_part <= 51) and coverage[i][j] != 100:
+                    
+                    #if ogm[i][j] < 51 and ogm_part_51 > 0.1 and ogm_part_51 < 0.3 and np.all(ogm_small_part <= 51) and coverage[i][j] != 100:
+                    if ogm_part_51 > 0.1 and np.all(ogm_part <= 51) and np.all(ogm_small_part < 51) and coverage[i][j] != 100:
                         useful_rays = []
                         #print i, j
                         for w in range(0, 359, 5):

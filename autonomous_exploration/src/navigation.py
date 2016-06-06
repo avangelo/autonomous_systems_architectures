@@ -59,7 +59,11 @@ class Navigation:
         # ROS Publisher for the current target
         self.current_target_publisher = rospy.Publisher(rospy.get_param('curr_target_pub_topic'),\
             Marker, queue_size = 10)
-            
+        
+        # Time Initialization
+        self.start_time = time.time()
+        self.end_time = 0
+
         
     def checkTarget(self, event):
         # Check if we have a target or if the robot just wanders
@@ -152,7 +156,7 @@ class Navigation:
         local_coverage = self.robot_perception.getCoverage()
         print "Got the map and Coverage"
         
-  
+        
         # Call the target selection function to select the next best goal
         # Choose target function
         if self.target_selector == "random":
@@ -210,9 +214,28 @@ class Navigation:
                 self.select_another_target)
         else:
             print "Target function selected doesn't exist"
-        if target == [0,0]:
-            print "Can't find new target. The exploration is complete"
-            return
+        
+        if target == [0, 0]:
+            
+            if self.target_selector == "next_best_view" or self.target_selector == "nearest_unexplored_brush":
+                print "Can't find new unexplored target. Calling Nearest Uncovered Brushfire"
+                self.target_selector = "nearest_uncovered_brush"
+                target = self.target_selection.selectNearestUncoveredBrush(\
+                    local_ogm,\
+                    local_coverage,\
+                    self.robot_perception.robot_pose,\
+                    self.select_another_target)
+                print "The time needed to explore the area is:"
+                print time.time() - self.start_time
+            else:
+                print "Can't find new target. The exploration is complete"
+                self.end_time = time.time()
+                print "Temporal Cost:"
+                print self.end_time - self.start_time
+                print "Spatial Cost:"
+                print np.sum(self.robot_perception.cell_matrix != 0)
+                print np.sum(self.robot_perception.cell_matrix)
+                return
         else:
             print "Navigation: New target: " + str(target)
         
@@ -308,7 +331,7 @@ class Navigation:
         # Hint: Trigonometry is required
     
         max_angular = 0.5
-        max_linear  = 0.5
+        max_linear  = 0.35
 
         [rx, ry] = [\
             self.robot_perception.robot_pose['x_px'] - \

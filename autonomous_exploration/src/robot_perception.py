@@ -3,6 +3,7 @@
 import rospy
 import tf
 import numpy
+import time
 
 from nav_msgs.msg import OccupancyGrid
 from nav_msgs.msg import Path
@@ -163,7 +164,6 @@ class RobotPerception:
         
         
         # Calculating Revisiting Cost
-        
         [rx, ry] = [\
             self.robot_pose['x_px'] - \
                     self.origin['x'] / self.resolution,\

@@ -2,6 +2,7 @@
 
 import rospy
 import math
+import time
 
 from sensor_msgs.msg import Range
 from sensor_msgs.msg import LaserScan
@@ -169,11 +170,12 @@ class RobotController:
 
       self.linear_velocity  = 0
       self.angular_velocity = 0
-        
+      
+      
       # Get the speeds using the motor schema approach
       # YOUR CODE HERE ------------------------------------------------------
       
-      sc_factor = 0.00002
+      sc_factor = 0.00005
       self.angular_velocity = (a_goal + sc_factor * a_laser)
       self.linear_velocity = (l_goal + sc_factor * l_laser)
       if self.linear_velocity < 0:
