@@ -331,7 +331,7 @@ class Navigation:
         # Hint: Trigonometry is required
     
         max_angular = 0.5
-        max_linear  = 0.35
+        max_linear  = 0.3
 
         [rx, ry] = [\
             self.robot_perception.robot_pose['x_px'] - \

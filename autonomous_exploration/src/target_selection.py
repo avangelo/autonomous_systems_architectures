@@ -333,7 +333,7 @@ class TargetSelection:
                 j = position[1]
                 ogm_part = ogm[i-6:i+6,j-6:j+6]
                 ogm_part_51 = np.sum(ogm_part == 51) / float(np.size(ogm_part))
-                ogm_small_part = ogm[i-2:i+2,j-2:j+2]
+                ogm_small_part = ogm[i-3:i+3,j-3:j+3]
                 
                 #if ogm_part_51 > 0.2 and ogm_part_51 < 0.7 and np.all(ogm_part <= 51) and np.all(ogm_small_part < 51) and coverage[i][j] != 100:
                 if ogm_part_51 > 0.1 and np.all(ogm_part <= 51) and np.all(ogm_small_part < 51) and coverage[i][j] != 100:
@@ -344,7 +344,7 @@ class TargetSelection:
                     self.goals_position.append([i, j])
                     # Publish the targets for visualization purposes
                     self.show_targets()
-                    print ogm_part
+                    #print ogm_part
                     break
                     
             self.next_step_brushfire_positions = brushfire_position_test
@@ -566,9 +566,12 @@ class TargetSelection:
             self.goals_value = []
             for i in range(0, ogm.shape[0]-1, 10):
                 for j in range(0, ogm.shape[1]-1, 10):
-                    ogm_part = ogm[i-5:i+5,j-5:j+5]
+                    
+                    ogm_part = ogm[i-6:i+6,j-6:j+6]
+                    #cov_part = coverage[i-6:i+6,j-6:j+6]
+                    
                     dist = []
-                    if ogm[i][j] < 51 and coverage[i][j] != 100 and np.all(ogm_part <= 51):
+                    if coverage[i][j] != 100 and np.all(ogm_part < 51):
                         for w in range(0, 359, 45):
                             w = w * 2 * math.pi / 360
                             x = i
@@ -691,14 +694,14 @@ class TargetSelection:
         if select_another_target == 0:
             self.goals_position = []
             self.goals_value = []
-            for i in range(0, ogm.shape[0]-1, 6):
-                for j in range(0, ogm.shape[1]-1, 6):
+            for i in range(0, ogm.shape[0]-1, 5):
+                for j in range(0, ogm.shape[1]-1, 5):
                     
                     #ogm_part = ogm[i-10:i+10,j-10:j+10]
                     #ogm_small_part = ogm[i-7:i+7,j-7:j+7]
                     
-                    ogm_part = ogm[i-6:i+6,j-6:j+6]
-                    ogm_small_part = ogm[i-3:i+3,j-3:j+3]
+                    ogm_part = ogm[i-8:i+8,j-8:j+8]
+                    ogm_small_part = ogm[i-4:i+4,j-4:j+4]
                     ogm_part_51 = np.sum(ogm_part == 51) / float(np.size(ogm_part))
                     
                     
