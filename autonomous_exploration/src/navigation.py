@@ -246,11 +246,11 @@ class Navigation:
                         local_coverage,\
                         self.robot_perception.robot_pose,\
                         self.select_another_target)
-                        self.time_exploration = time.time() - self.start_time
-                        self.time_exploration_coverage = self.time_coverage
-                        self.time_exploration_path_planning = self.time_path_planning
-                        self.time_exploration_target_selection = self.time_target_selection
-                    
+                    end_time_exploration = time.time()
+                    self.time_exploration = end_time_exploration - self.start_time
+                    self.time_exploration_coverage = self.time_coverage
+                    self.time_exploration_path_planning = self.time_path_planning
+                    self.time_exploration_target_selection = self.time_target_selection
                     print "The time needed to explore the area is:"
                     print self.time_exploration
                 else:

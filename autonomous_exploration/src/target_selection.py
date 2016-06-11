@@ -331,12 +331,12 @@ class TargetSelection:
                 brushfire_position_test.remove(position)
                 i = position[0]
                 j = position[1]
-                ogm_part = ogm[i-6:i+6,j-6:j+6]
+                ogm_part = ogm[i-8:i+8,j-8:j+8]
                 ogm_part_51 = np.sum(ogm_part == 51) / float(np.size(ogm_part))
-                ogm_small_part = ogm[i-3:i+3,j-3:j+3]
+                ogm_small_part = ogm[i-4:i+4,j-4:j+4]
                 
                 #if ogm_part_51 > 0.2 and ogm_part_51 < 0.7 and np.all(ogm_part <= 51) and np.all(ogm_small_part < 51) and coverage[i][j] != 100:
-                if ogm_part_51 > 0.1 and np.all(ogm_part <= 51) and np.all(ogm_small_part < 51) and coverage[i][j] != 100:
+                if ogm_part_51 > 0.15 and np.all(ogm_part <= 51) and np.all(ogm_small_part < 51) and coverage[i][j] != 100:
                     next_target = [i, j]
                     goal_found = True
                     #self.next_step_brushfire_positions = brushfire_position_test
@@ -730,7 +730,7 @@ class TargetSelection:
                             #wait = input("PRESS 1 TO CONTINUE.")
                             useful_rays.append([useful_ray_length])
                         useful_area = np.sum(useful_rays)
-                        if useful_area > 500:
+                        if useful_area > 350:
                             #print useful_area
                             #wait = input("PRESS 1 TO CONTINUE.")
                             self.goals_value.append([useful_area])
