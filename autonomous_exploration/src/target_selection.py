@@ -694,8 +694,8 @@ class TargetSelection:
         if select_another_target == 0:
             self.goals_position = []
             self.goals_value = []
-            for i in range(0, ogm.shape[0]-1, 5):
-                for j in range(0, ogm.shape[1]-1, 5):
+            for i in range(0, ogm.shape[0]-1, 3):
+                for j in range(0, ogm.shape[1]-1, 3):
                     
                     #ogm_part = ogm[i-10:i+10,j-10:j+10]
                     #ogm_small_part = ogm[i-7:i+7,j-7:j+7]
@@ -730,11 +730,12 @@ class TargetSelection:
                             #wait = input("PRESS 1 TO CONTINUE.")
                             useful_rays.append([useful_ray_length])
                         useful_area = np.sum(useful_rays)
-                        if useful_area > 50:
+                        if useful_area > 500:
                             #print useful_area
                             #wait = input("PRESS 1 TO CONTINUE.")
                             self.goals_value.append([useful_area])
                             self.goals_position.append([i, j])
+            print self.goals_value
         else:
             while(select_another_target != 0):
                 print "Select another target"

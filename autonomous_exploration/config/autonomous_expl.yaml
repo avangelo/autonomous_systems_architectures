@@ -12,7 +12,7 @@ velocities_architecture: 'motor_schema'
 #                  'nearest_unexplored_circle'
 #                  'best_topology'
 #                  'next_best_view'
-target_selector: 'best_topology'
+target_selector: 'nearest_unexplored_brush'
 
 # Debugging purposes
 print_velocities: False
@@ -48,4 +48,4 @@ base_footprint_frame: '/base_footprint'
 cell_size: 20
 
 # Time (seconds)
-time_limit: 60
+time_limit: 0
