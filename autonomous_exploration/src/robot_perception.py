@@ -4,6 +4,7 @@ import rospy
 import tf
 import numpy
 import time
+import math
 
 from nav_msgs.msg import OccupancyGrid
 from nav_msgs.msg import Path
@@ -32,11 +33,12 @@ class RobotPerception:
 
         # Holds the robot's total path
         self.robot_trajectory = []
+        self.previous_trajectory_length = 0
 
         # Holds the coverage information. This has the same size as the ogm
         # If a cell has the value of 0 it is uncovered
         # In the opposite case the cell's value will be 100
-        self.coverage = 0
+        self.coverage = []
 
         # Holds the resolution of the occupancy grid map
         self.resolution = 0.2
@@ -236,7 +238,8 @@ class RobotPerception:
         
         # Reinitialize coverage map
         ogm_shape = self.ogm.shape
-        self.coverage = numpy.zeros(ogm_shape)
+        if self.coverage == []:
+            self.coverage = numpy.zeros(ogm_shape)
         
         # YOUR CODE HERE ------------------------------------------------------
         # Update the coverage field using the self.robot_path veriable.
@@ -246,8 +249,9 @@ class RobotPerception:
         # PS. Try to make it fast :)
         # PS2. Do not have coverage values on obstacles or unknown space!
         # If done correctly, the coverage will appear purple in rviz
-
-        for i in range(0,self.robot_trajectory.__len__(), 10):
+        
+        
+        for i in range(self.previous_trajectory_length, self.robot_trajectory.__len__(), 10):
             x_value = self.robot_trajectory[i][0]/self.resolution + abs(self.origin['x']/self.resolution)
             y_value = self.robot_trajectory[i][1]/self.resolution + abs(self.origin['y']/self.resolution)
             cov_part = self.coverage[x_value-20:x_value+20,y_value-20:y_value+20]
@@ -257,7 +261,24 @@ class RobotPerception:
                     if ogm_part[j,k] <= 49 and ogm_part[j,k] >= 0:
                         cov_part[j,k] = 100
             self.coverage[x_value-20:x_value+20,y_value-20:y_value+20] = cov_part
-
+        self.previous_trajectory_length = len(self.robot_trajectory)
+        #for i in range(0, len(self.robot_trajectory), 1):
+            #if i == 0:
+                #x_value = self.robot_trajectory[i][0]/self.resolution + abs(self.origin['x']/self.resolution)
+                #y_value = self.robot_trajectory[i][1]/self.resolution + abs(self.origin['y']/self.resolution)
+            #x_value_show = self.robot_trajectory[i][0]/self.resolution + abs(self.origin['x']/self.resolution)
+            #y_value_show = self.robot_trajectory[i][1]/self.resolution + abs(self.origin['y']/self.resolution)
+            #distance = math.sqrt((y_value_show - y_value)**2 + (x_value_show - x_value)**2)
+            #if distance >= 5 or i == 0:
+                #cov_part = self.coverage[x_value-20:x_value+20,y_value-20:y_value+20]
+                #ogm_part = self.ogm[x_value-20:x_value+20,y_value-20:y_value+20]
+                #for j in range(0,39):
+                    #for k in range(0,39):
+                        #if ogm_part[j,k] <= 49 and ogm_part[j,k] >= 0:
+                            #cov_part[j,k] = 100
+                #self.coverage[x_value-20:x_value+20,y_value-20:y_value+20] = cov_part
+                #x_value = x_value_show
+                #y_value = y_value_show
         # ---------------------------------------------------------------------
         # Publishing coverage ogm to see it in rviz
         coverage_ogm = OccupancyGrid()

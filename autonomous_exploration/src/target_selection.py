@@ -336,7 +336,7 @@ class TargetSelection:
                 ogm_small_part = ogm[i-4:i+4,j-4:j+4]
                 
                 #if ogm_part_51 > 0.2 and ogm_part_51 < 0.7 and np.all(ogm_part <= 51) and np.all(ogm_small_part < 51) and coverage[i][j] != 100:
-                if ogm_part_51 > 0.15 and np.all(ogm_part <= 51) and np.all(ogm_small_part < 51) and coverage[i][j] != 100:
+                if ogm_part_51 > 0.175 and np.all(ogm_part <= 51) and np.all(ogm_small_part < 51) and coverage[i][j] != 100:
                     next_target = [i, j]
                     goal_found = True
                     #self.next_step_brushfire_positions = brushfire_position_test
@@ -700,8 +700,8 @@ class TargetSelection:
                     #ogm_part = ogm[i-10:i+10,j-10:j+10]
                     #ogm_small_part = ogm[i-7:i+7,j-7:j+7]
                     
-                    ogm_part = ogm[i-8:i+8,j-8:j+8]
-                    ogm_small_part = ogm[i-4:i+4,j-4:j+4]
+                    ogm_part = ogm[i-10:i+10,j-10:j+10]
+                    ogm_small_part = ogm[i-5:i+5,j-5:j+5]
                     ogm_part_51 = np.sum(ogm_part == 51) / float(np.size(ogm_part))
                     
                     
@@ -709,7 +709,7 @@ class TargetSelection:
                     if ogm_part_51 > 0.1 and np.all(ogm_part <= 51) and np.all(ogm_small_part < 51) and coverage[i][j] != 100:
                         useful_rays = []
                         #print i, j
-                        for w in range(0, 359, 5):
+                        for w in range(0, 359, 3):
                             w = w * 2 * math.pi / 360
                             next_pixel = 0
                             x = i
@@ -717,7 +717,7 @@ class TargetSelection:
                             ray_length = 0
                             useful_ray_length = 0
                             while ray_length <= 5:
-                                next_pixel += 2
+                                next_pixel += 1
                                 x = i + next_pixel * math.cos(w)
                                 y = j + next_pixel * math.sin(w)
                                 #print x, y
@@ -730,7 +730,7 @@ class TargetSelection:
                             #wait = input("PRESS 1 TO CONTINUE.")
                             useful_rays.append([useful_ray_length])
                         useful_area = np.sum(useful_rays)
-                        if useful_area > 350:
+                        if useful_area > 500:
                             #print useful_area
                             #wait = input("PRESS 1 TO CONTINUE.")
                             self.goals_value.append([useful_area])
