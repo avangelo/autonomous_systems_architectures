@@ -250,18 +250,27 @@ class RobotPerception:
         # PS2. Do not have coverage values on obstacles or unknown space!
         # If done correctly, the coverage will appear purple in rviz
         
-        
         for i in range(self.previous_trajectory_length, self.robot_trajectory.__len__(), 10):
             x_value = self.robot_trajectory[i][0]/self.resolution + abs(self.origin['x']/self.resolution)
             y_value = self.robot_trajectory[i][1]/self.resolution + abs(self.origin['y']/self.resolution)
-            cov_part = self.coverage[x_value-20:x_value+20,y_value-20:y_value+20]
-            ogm_part = self.ogm[x_value-20:x_value+20,y_value-20:y_value+20]
             for j in range(0,39):
                 for k in range(0,39):
-                    if ogm_part[j,k] <= 49 and ogm_part[j,k] >= 0:
-                        cov_part[j,k] = 100
-            self.coverage[x_value-20:x_value+20,y_value-20:y_value+20] = cov_part
+                    if self.ogm[x_value - 20 + j,y_value - 20 + k] <= 49 and self.ogm[x_value - 20 + j,y_value - 20 + k] >= 0:
+                        self.coverage[x_value - 20 + j,y_value - 20 + k] = 100
         self.previous_trajectory_length = len(self.robot_trajectory)
+        
+        #for i in range(self.previous_trajectory_length, self.robot_trajectory.__len__(), 10):
+            #x_value = self.robot_trajectory[i][0]/self.resolution + abs(self.origin['x']/self.resolution)
+            #y_value = self.robot_trajectory[i][1]/self.resolution + abs(self.origin['y']/self.resolution)
+            ##cov_part = self.coverage[x_value-20:x_value+20,y_value-20:y_value+20]
+            #ogm_part = self.ogm[x_value-20:x_value+20,y_value-20:y_value+20]
+            #for j in range(0,39):
+                #for k in range(0,39):
+                    #if ogm_part[j,k] <= 49 and ogm_part[j,k] >= 0:
+                        #cov_part[j,k] = 100
+            #self.coverage[x_value-20:x_value+20,y_value-20:y_value+20] = cov_part
+        #self.previous_trajectory_length = len(self.robot_trajectory)
+        
         #for i in range(0, len(self.robot_trajectory), 1):
             #if i == 0:
                 #x_value = self.robot_trajectory[i][0]/self.resolution + abs(self.origin['x']/self.resolution)
