@@ -59,6 +59,9 @@ class RobotPerception:
         self.robot_pose['x_px'] = 0
         self.robot_pose['y_px'] = 0
 
+        self.coverage_ogm = OccupancyGrid()
+        self.coverage_ogm.header.frame_id = "map"
+
         ogm_topic = rospy.get_param('ogm_topic')
         robot_trajectory_topic = rospy.get_param('robot_trajectory_topic')
         coverage_pub_topic = rospy.get_param('coverage_pub_topic')
@@ -230,6 +233,8 @@ class RobotPerception:
         
         # This is for the navigation
         if self.have_map == False:
+          self.coverage_ogm.info = self.ogm_info
+          self.coverage_ogm.data = numpy.zeros(self.ogm_info.width * self.ogm_info.height)
           self.have_map = True
           print "Robot perception: Map initialized"
 
@@ -256,7 +261,10 @@ class RobotPerception:
             for j in range(0,39):
                 for k in range(0,39):
                     if self.ogm[x_value - 20 + j,y_value - 20 + k] <= 49 and self.ogm[x_value - 20 + j,y_value - 20 + k] >= 0:
-                        self.coverage[x_value - 20 + j,y_value - 20 + k] = 100
+                        xx = int(x_value - 20 + j)
+                        yy = int(y_value - 20 + k)
+                        self.coverage[xx,yy] = 100
+                        self.coverage_ogm.data[xx + self.ogm_info.width * yy] = 100
         self.previous_trajectory_length = len(self.robot_trajectory)
         
         #for i in range(self.previous_trajectory_length, self.robot_trajectory.__len__(), 10):
@@ -289,16 +297,7 @@ class RobotPerception:
                 #x_value = x_value_show
                 #y_value = y_value_show
         # ---------------------------------------------------------------------
-        # Publishing coverage ogm to see it in rviz
-        coverage_ogm = OccupancyGrid()
-        coverage_ogm.header.frame_id = "map"
-        coverage_ogm.info = self.ogm_info
-        coverage_ogm.data = numpy.zeros(self.ogm_info.width * self.ogm_info.height)
-        for i in range(0, self.ogm_info.width):
-            for j in range(0, self.ogm_info.height):
-                coverage_ogm.data[i + self.ogm_info.width * j] = self.coverage[i][j]
-
-        self.coverage_publisher.publish(coverage_ogm)
+        self.coverage_publisher.publish(self.coverage_ogm)
     
     # Transforms relative coordinates to global
     def getGlobalCoordinates(self, p, with_resolution = True):
