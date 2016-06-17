@@ -175,6 +175,7 @@ class RobotPerception:
             self.robot_pose['y_px'] - \
                     self.origin['y'] / self.resolution\
                     ]
+        #print rx, ry
         if self.have_map == True and numpy.all(self.cell_matrix == 0):
             self.cell_matrix = numpy.zeros((self.ogm.shape[0] / self.cell_size, self.ogm.shape[0] / self.cell_size))
             self.current_cell = [int(rx / self.cell_size), int(ry / self.cell_size)]
@@ -267,35 +268,7 @@ class RobotPerception:
                         self.coverage_ogm.data[xx + self.ogm_info.width * yy] = 100
         self.previous_trajectory_length = len(self.robot_trajectory)
         
-        #for i in range(self.previous_trajectory_length, self.robot_trajectory.__len__(), 10):
-            #x_value = self.robot_trajectory[i][0]/self.resolution + abs(self.origin['x']/self.resolution)
-            #y_value = self.robot_trajectory[i][1]/self.resolution + abs(self.origin['y']/self.resolution)
-            ##cov_part = self.coverage[x_value-20:x_value+20,y_value-20:y_value+20]
-            #ogm_part = self.ogm[x_value-20:x_value+20,y_value-20:y_value+20]
-            #for j in range(0,39):
-                #for k in range(0,39):
-                    #if ogm_part[j,k] <= 49 and ogm_part[j,k] >= 0:
-                        #cov_part[j,k] = 100
-            #self.coverage[x_value-20:x_value+20,y_value-20:y_value+20] = cov_part
-        #self.previous_trajectory_length = len(self.robot_trajectory)
         
-        #for i in range(0, len(self.robot_trajectory), 1):
-            #if i == 0:
-                #x_value = self.robot_trajectory[i][0]/self.resolution + abs(self.origin['x']/self.resolution)
-                #y_value = self.robot_trajectory[i][1]/self.resolution + abs(self.origin['y']/self.resolution)
-            #x_value_show = self.robot_trajectory[i][0]/self.resolution + abs(self.origin['x']/self.resolution)
-            #y_value_show = self.robot_trajectory[i][1]/self.resolution + abs(self.origin['y']/self.resolution)
-            #distance = math.sqrt((y_value_show - y_value)**2 + (x_value_show - x_value)**2)
-            #if distance >= 5 or i == 0:
-                #cov_part = self.coverage[x_value-20:x_value+20,y_value-20:y_value+20]
-                #ogm_part = self.ogm[x_value-20:x_value+20,y_value-20:y_value+20]
-                #for j in range(0,39):
-                    #for k in range(0,39):
-                        #if ogm_part[j,k] <= 49 and ogm_part[j,k] >= 0:
-                            #cov_part[j,k] = 100
-                #self.coverage[x_value-20:x_value+20,y_value-20:y_value+20] = cov_part
-                #x_value = x_value_show
-                #y_value = y_value_show
         # ---------------------------------------------------------------------
         self.coverage_publisher.publish(self.coverage_ogm)
     

@@ -14,7 +14,7 @@ class TargetSelection:
     
     # Constructor
     def __init__(self):
-        self.robot_perception = RobotPerception()
+        #self.robot_perception = RobotPerception()
         self.goals_position = []
         self.goals_value = []
         self.omega = 0.0
@@ -123,15 +123,15 @@ class TargetSelection:
         
         return next_target
     
-    def selectNearestUncoveredBrush(self, ogm, coverage, robot_pose, select_another_target):
-        
+    def selectNearestUncoveredBrush(self, ogm, coverage, robot_pose, select_another_target, origin, resolution):
+        #print robot_pose
         # The next target in pixels
         next_target = [0, 0]
         [rx, ry] = [\
-            self.robot_perception.robot_pose['x_px'] - \
-                    self.robot_perception.origin['x'] / self.robot_perception.resolution,\
-            self.robot_perception.robot_pose['y_px'] - \
-                    self.robot_perception.origin['y'] / self.robot_perception.resolution\
+            robot_pose['x_px'] - \
+                    origin['x'] / resolution,\
+            robot_pose['y_px'] - \
+                    origin['y'] / resolution\
                     ]
         rx = int(rx)
         ry = int(ry)
@@ -286,6 +286,7 @@ class TargetSelection:
     
     def selectNearestUnexploredBrush(self, ogm, coverage, robot_pose, select_another_target):
         
+        print robot_pose
         # The next target in pixels
         next_target = [0, 0]
         [rx, ry] = [\
