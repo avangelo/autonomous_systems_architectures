@@ -29,7 +29,7 @@ class TargetSelection:
         self.subtargets_publisher = rospy.Publisher(rospy.get_param('goals_pub_topic'),\
             MarkerArray, queue_size = 10)
 
-    def show_targets(self):
+    def show_targets(self, origin, resolution):
     
     # Publish the targets for visualization purposes
         ros_goals = MarkerArray()
@@ -44,10 +44,8 @@ class TargetSelection:
             st.header.stamp = rospy.Time(0)
             st.type = 2 # sphere
             st.action = 0 # add
-            st.pose.position.x = s[0] * self.robot_perception.resolution + \
-                    self.robot_perception.origin['x']
-            st.pose.position.y = s[1] * self.robot_perception.resolution + \
-                    self.robot_perception.origin['y']
+            st.pose.position.x = s[0] * resolution + origin['x']
+            st.pose.position.y = s[1] * resolution + origin['y']
 
             st.color.r = 0.8
             st.color.g = 0
@@ -284,20 +282,15 @@ class TargetSelection:
         
         return next_target
     
-    def selectNearestUnexploredBrush(self, ogm, coverage, robot_pose, select_another_target):
-        
-        print robot_pose
+    def selectNearestUnexploredBrush(self, ogm, coverage, robot_pose, select_another_target, origin, resolution):
         # The next target in pixels
         next_target = [0, 0]
         [rx, ry] = [\
-            self.robot_perception.robot_pose['x_px'] - \
-                    self.robot_perception.origin['x'] / self.robot_perception.resolution,\
-            self.robot_perception.robot_pose['y_px'] - \
-                    self.robot_perception.origin['y'] / self.robot_perception.resolution\
+            robot_pose['x_px'] - \
+                    origin['x'] / resolution,\
+            robot_pose['y_px'] - \
+                    origin['y'] / resolution\
                     ]
-        rx = int(rx)
-        ry = int(ry)
-        print rx, ry
         goal_found = False
         
         if select_another_target == 0:
@@ -344,7 +337,7 @@ class TargetSelection:
                     #print brushfire_position_test
                     self.goals_position.append([i, j])
                     # Publish the targets for visualization purposes
-                    self.show_targets()
+                    self.show_targets(origin, resolution)
                     #print ogm_part
                     break
                     
@@ -549,15 +542,15 @@ class TargetSelection:
         
         return next_target
         
-    def selectBestTopology(self, ogm, coverage, robot_pose, select_another_target):
+    def selectBestTopology(self, ogm, coverage, robot_pose, select_another_target, origin, resolution):
         
         # The next target in pixels
         next_target = [0, 0]
         [rx, ry] = [\
-            self.robot_perception.robot_pose['x_px'] - \
-                    self.robot_perception.origin['x'] / self.robot_perception.resolution,\
-            self.robot_perception.robot_pose['y_px'] - \
-                    self.robot_perception.origin['y'] / self.robot_perception.resolution\
+            robot_pose['x_px'] - \
+                    origin['x'] / resolution,\
+            robot_pose['y_px'] - \
+                    origin['y'] / resolution\
                     ]
         unexplored_ray_value = 200
         max_ray = 5
@@ -565,8 +558,10 @@ class TargetSelection:
         if select_another_target == 0:
             self.goals_position = []
             self.goals_value = []
-            for i in range(0, ogm.shape[0]-1, 10):
-                for j in range(0, ogm.shape[1]-1, 10):
+            #for i in range(0, ogm.shape[0]-1, 10):
+                #for j in range(0, ogm.shape[1]-1, 10):
+            for i in range(700, 1200, 10):
+                for j in range(700, 1200, 10):
                     
                     ogm_part = ogm[i-6:i+6,j-6:j+6]
                     #cov_part = coverage[i-6:i+6,j-6:j+6]
@@ -583,11 +578,11 @@ class TargetSelection:
                                 next_pixel += 1
                                 x = i + next_pixel * math.cos(w)
                                 y = j + next_pixel * math.sin(w)
-                                length_ray = math.sqrt((x - i)**2 + (y - j)**2) * self.robot_perception.resolution
+                                length_ray = math.sqrt((x - i)**2 + (y - j)**2) * resolution
                             if ogm[x][y] == 51:
-                                dist = np.append(dist, max_ray / self.robot_perception.resolution)
+                                dist = np.append(dist, max_ray / resolution)
                             else:
-                                dist = np.append(dist, length_ray / self.robot_perception.resolution)
+                                dist = np.append(dist, length_ray / resolution)
                         #print dist
                         sum_dist = np.sum(dist)
                         #print i, j
@@ -605,7 +600,7 @@ class TargetSelection:
                 select_another_target -= 1
         
         # Publish the targets for visualization purposes
-        self.show_targets()
+        self.show_targets(origin, resolution)
         
         if self.goals_value == []:
             next_target = [0, 0]
@@ -680,23 +675,25 @@ class TargetSelection:
         
         return next_target
         
-    def selectNextBestView(self, ogm, coverage, robot_pose, select_another_target):
+    def selectNextBestView(self, ogm, coverage, robot_pose, select_another_target, origin, resolution):
             
         # The next target in pixels
         next_target = [0, 0]
         [rx, ry] = [\
-            self.robot_perception.robot_pose['x_px'] - \
-                    self.robot_perception.origin['x'] / self.robot_perception.resolution,\
-            self.robot_perception.robot_pose['y_px'] - \
-                    self.robot_perception.origin['y'] / self.robot_perception.resolution\
+            robot_pose['x_px'] - \
+                    origin['x'] / resolution,\
+            robot_pose['y_px'] - \
+                    origin['y'] / resolution\
                     ]
         possible_targets  = []
         useful_areas = []
         if select_another_target == 0:
             self.goals_position = []
             self.goals_value = []
-            for i in range(0, ogm.shape[0]-1, 3):
-                for j in range(0, ogm.shape[1]-1, 3):
+            #for i in range(0, ogm.shape[0]-1, 3):
+                #for j in range(0, ogm.shape[1]-1, 3):
+            for i in range(700, 1200, 5):
+                for j in range(700, 1200, 5):
                     
                     #ogm_part = ogm[i-10:i+10,j-10:j+10]
                     #ogm_small_part = ogm[i-7:i+7,j-7:j+7]
@@ -726,7 +723,7 @@ class TargetSelection:
                                     break
                                 if ogm[x][y] == 51:
                                     useful_ray_length += 1
-                                ray_length = math.sqrt((i - x)**2 + (j - y)**2) * self.robot_perception.resolution
+                                ray_length = math.sqrt((i - x)**2 + (j - y)**2) * resolution
                                 #print ray_length
                             #wait = input("PRESS 1 TO CONTINUE.")
                             useful_rays.append([useful_ray_length])
@@ -751,7 +748,7 @@ class TargetSelection:
         print self.goals_position
 
         # Publish the targets for visualization purposes
-        self.show_targets()
+        self.show_targets(origin, resolution)
         
         if self.goals_value == []:
             next_target = [0, 0]
