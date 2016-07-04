@@ -103,8 +103,8 @@ class RobotController:
       # Adjust the linear and angular velocities using the laser scan
 
       for i in range(0,666):
-		linear -= (math.cos((-2*math.pi)/3 + i * ((4*math.pi/3)/666)) / scan[i]**2)
-		angular -= (math.sin((-2*math.pi)/3 + i * ((4*math.pi/3)/666)) / scan[i]**2)
+        linear -= (math.cos((-2*math.pi)/3 + i * ((4*math.pi/3)/666)) / scan[i]**2)
+        angular -= (math.sin((-2*math.pi)/3 + i * ((4*math.pi/3)/666)) / scan[i]**2)
       #if linear < 0:
 		#linear = 0
       #print "[linear,angular] = [%f,%f]" % (linear,angular)
@@ -180,6 +180,10 @@ class RobotController:
       self.linear_velocity = (l_goal + sc_factor * l_laser)
       if self.linear_velocity < 0:
             self.linear_velocity = 0
+      if self.angular_velocity > 0.5:
+          self.angular_velocity = 0.5
+      if self.angular_velocity < -0.5:
+          self.angular_velocity = -0.5
       #if self.linear_velocity < 0:
             #self.linear_velocity = 0
       #print "[linear,angular] = [%f,%f]" % (self.linear_velocity,self.angular_velocity)

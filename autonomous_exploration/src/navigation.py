@@ -71,6 +71,7 @@ class Navigation:
         self.time_exploration_coverage = 0
         self.time_exploration_path_planning = 0
         self.time_exploration_target_selection = 0
+        self.num_of_targets = 0
         
     def checkTarget(self, event):
         # Check if we have a target or if the robot just wanders
@@ -99,7 +100,7 @@ class Navigation:
             ry - self.subtargets[self.next_subtarget][1])
 
         # Check if distance is less than 7 px (14 cm)
-        if dist < 5:
+        if dist < 7:
           print "Sub target reached!"
           self.next_subtarget += 1
 
@@ -150,6 +151,13 @@ class Navigation:
         print "Navigation: Producing new target"
         # We are good to continue the exploration
         # Make this true in order not to call it again from the speeds assignment
+        
+        if  self.target_selector == "nearest_unexplored_brush" or self.target_selector == "next_best_view" or self.target_selector == "best_topology":
+            if self.select_another_target == 0:
+                
+                self.num_of_targets += 1
+                time.sleep(10)
+            
         self.target_exists = True
         
         
@@ -285,6 +293,8 @@ class Navigation:
                     print self.time_exploration_path_planning
                     print "Exploration Target Selection Time Overall:"
                     print self.time_exploration_target_selection
+                    print "OGM waiting time:"
+                    print self.num_of_targets * 10
                     return
             else:
                 print "Navigation: New target: " + str(target)
@@ -429,8 +439,8 @@ class Navigation:
         # compute the robot velocities for the vehicle to approach the target.
         # Hint: Trigonometry is required
     
-        max_angular = 0.75
-        max_linear  = 0.3
+        max_angular = 2
+        max_linear  = 0.25
 
         [rx, ry] = [\
             self.robot_perception.robot_pose['x_px'] - \
@@ -457,6 +467,7 @@ class Navigation:
                 angular = (ang_diff + 2 * math.pi) / math.pi
             linear = (1 - abs(angular))**16 * max_linear
             angular = angular * max_angular
+            #linear = (1 - abs(angular))**16 * max_linear
 			#print "[linear,angular] = [%f,%f]" % (linear,angular)
         # ---------------------------------------------------------------------
 
