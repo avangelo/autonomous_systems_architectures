@@ -4,6 +4,7 @@ import rospy
 import random
 import math
 import numpy as np
+from path_planning import PathPlanning
 from timeit import default_timer as timer
 from robot_perception import RobotPerception
 from visualization_msgs.msg import Marker
@@ -14,7 +15,9 @@ class TargetSelection:
     
     # Constructor
     def __init__(self):
-        #self.robot_perception = RobotPerception()
+        self.path_planning = PathPlanning()
+        self.robot_perception = RobotPerception()
+        
         self.goals_position = []
         self.goals_value = []
         self.omega = 0.0
@@ -562,16 +565,17 @@ class TargetSelection:
             self.goals_value = []
             #for i in range(0, ogm.shape[0]-1, 10):
                 #for j in range(0, ogm.shape[1]-1, 10):
-            for i in range(400, 900, 5):
-                for j in range(400, 900, 5):
-            #for i in range(700, 1200, 5):
-                #for j in range(700, 1200, 5):
+            #for i in range(400, 900, 5):
+                #for j in range(400, 900, 5):
+            for i in range(700, 1200, 5):
+                for j in range(700, 1200, 5):
                     
                     ogm_part = ogm[i-6:i+6,j-6:j+6]
                     #cov_part = coverage[i-6:i+6,j-6:j+6]
                     
                     dist = []
                     if coverage[i][j] != 100 and np.all(ogm_part < 51):
+                        
                         for w in range(0, 359, 45):
                             w = w * 2 * math.pi / 360
                             x = i
@@ -594,6 +598,7 @@ class TargetSelection:
                         #wait = input("PRESS 1 TO CONTINUE.")
                         self.goals_value.append([sum_dist])
                         self.goals_position.append([i, j])
+                        
         else:
             while(select_another_target != 0):
                 if self.goals_value == []:
@@ -765,4 +770,137 @@ class TargetSelection:
             yt = self.goals_position[index_max][1]
             next_target = [xt, yt]
             
+        return next_target
+        
+    def selectCombi(self, ogm, coverage, robot_pose, select_another_target, origin, resolution):
+        
+        # The next target in pixels
+        next_target = [0, 0]
+        [rx, ry] = [\
+            robot_pose['x_px'] - \
+                    origin['x'] / resolution,\
+            robot_pose['y_px'] - \
+                    origin['y'] / resolution\
+                    ]
+        unexplored_ray_value = 200
+        max_ray = 5
+        all_paths_length = []
+        all_paths_angle = []
+        all_sum_dist = []
+        local_ros_ogm = self.robot_perception.getRosMap()
+        
+        if select_another_target == 0:
+            self.goals_position = []
+            self.goals_value = []
+            #for i in range(0, ogm.shape[0]-1, 10):
+                #for j in range(0, ogm.shape[1]-1, 10):
+            #for i in range(400, 900, 5):
+                #for j in range(400, 900, 5):
+            for i in range(700, 1200, 10):
+                for j in range(700, 1200, 10):
+                    
+                    ogm_part = ogm[i-6:i+6,j-6:j+6]
+                    #cov_part = coverage[i-6:i+6,j-6:j+6]
+                    
+                    dist = []
+                    if coverage[i][j] != 100 and np.all(ogm_part < 51):
+                        
+                        # topology
+                        for w in range(0, 359, 45):
+                            w = w * 2 * math.pi / 360
+                            x = i
+                            y = j
+                            length_ray = 0
+                            next_pixel = 0
+                            while(ogm[x][y] < 51 and length_ray <= max_ray):
+                                next_pixel += 1
+                                x = i + next_pixel * math.cos(w)
+                                y = j + next_pixel * math.sin(w)
+                                length_ray = math.sqrt((x - i)**2 + (y - j)**2) * resolution
+                            if ogm[x][y] == 51:
+                                dist = np.append(dist, max_ray / resolution)
+                            else:
+                                dist = np.append(dist, length_ray / resolution)
+                                
+                        sum_dist = np.sum(dist)
+                        
+                        all_sum_dist = np.append(all_sum_dist, sum_dist)
+                        
+                        path = self.path_planning.createPath(\
+                                    local_ros_ogm,\
+                                    [rx, ry],\
+                                    [i , j])
+                        
+                        
+                        # Reverse the path to start from the robot
+                        path = path[::-1]
+                        
+                        # calclulate length of path
+                        path_length = 0
+                        prev_point = [i, j]
+                        #print path
+                        for point in path:
+                            #print point, prev_point
+                            length = math.sqrt((prev_point[0] - point[0])**2 + (prev_point[1] - point[1])**2)
+                            #print path_length
+                            path_length += length
+                            prev_point = point
+                        all_paths_length = np.append(all_paths_length, path_length)
+                        #print all_paths_length
+                        
+                        path_angle = 0
+                        prev_point = [i, j]
+                        
+                        # calculate angle of path
+                        for point in path:
+                            #print point, prev_point
+                            angle = math.atan2(point[1] - prev_point[1],point[0] - prev_point[0])
+                            #print path_length
+                            path_angle += abs(angle)
+                            prev_point = point
+                        all_paths_angle = np.append(all_paths_angle, path_angle)
+                        #print all_paths_angle
+                        
+                        self.goals_position.append([i, j])
+                        
+            # normalize weights (0-1)
+            all_sum_dist = 1 - ( (all_sum_dist - min(all_sum_dist) ) / ( max(all_sum_dist) - min(all_sum_dist) ) )
+            all_paths_length = 1 - ( (all_paths_length - min(all_paths_length) ) / ( max(all_paths_length) - min(all_paths_length) ) )
+            all_paths_angle = 1 - ( (all_paths_angle - min(all_paths_angle) ) / ( max(all_paths_angle) - min(all_paths_angle) ) )
+            #print all_sum_dist
+            dig_all_sum_dist = all_sum_dist
+            dig_all_sum_dist[dig_all_sum_dist <= 0.5] = 0
+            dig_all_sum_dist[dig_all_sum_dist > 0.5] = 1
+            #print dig_all_sum_dist
+            dig_all_paths_length = all_paths_length
+            dig_all_paths_length[dig_all_paths_length <= 0.5] = 0
+            dig_all_paths_length[dig_all_paths_length > 0.5] = 1
+            
+            dig_all_paths_angle = all_paths_angle
+            dig_all_paths_angle[dig_all_paths_angle <= 0.5] = 0
+            dig_all_paths_angle[dig_all_paths_angle > 0.5] = 1
+            
+            ### τύπος σελ. 286
+            
+            self.goals_value.append([])
+        else:
+            while(select_another_target != 0):
+                if self.goals_value == []:
+                    break
+                index_min = np.argmin(self.goals_value)
+                self.goals_value.pop(index_min)
+                self.goals_position.pop(index_min)
+                select_another_target -= 1
+        
+        # Publish the targets for visualization purposes
+        self.show_targets(origin, resolution)
+        
+        if self.goals_value == []:
+            next_target = [0, 0]
+        else:
+            index_min = np.argmin(self.goals_value)
+            xt = self.goals_position[index_min][0]
+            yt = self.goals_position[index_min][1]
+            next_target = [xt, yt]
+        
         return next_target

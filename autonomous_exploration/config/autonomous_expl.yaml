@@ -12,7 +12,8 @@ velocities_architecture: 'motor_schema'
 #                  'nearest_unexplored_circle'
 #                  'best_topology'
 #                  'next_best_view'
-target_selector: 'best_topology'
+#                  'combi'
+target_selector: 'combi'
 
 # Debugging purposes
 print_velocities: False
