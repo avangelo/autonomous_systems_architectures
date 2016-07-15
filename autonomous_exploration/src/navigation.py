@@ -400,7 +400,7 @@ class Navigation:
             self.select_another_target = 0
         
         # Break the path to subgoals every 2 pixels (1m = 20px)
-        step = 1
+        step = 3
         n_subgoals = (int) (len(self.path)/step)
         self.subtargets = []
         for i in range(0, n_subgoals):

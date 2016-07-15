@@ -787,6 +787,7 @@ class TargetSelection:
         all_paths_length = []
         all_paths_angle = []
         all_sum_dist = []
+        all_cov_factors = []
         local_ros_ogm = self.robot_perception.getRosMap()
         
         if select_another_target == 0:
@@ -822,7 +823,7 @@ class TargetSelection:
                             else:
                                 dist = np.append(dist, length_ray / resolution)
                                 
-                        sum_dist = np.sum(dist)
+                        sum_dist = np.sum(dist) / 8
                         
                         all_sum_dist = np.append(all_sum_dist, sum_dist)
                         
@@ -830,40 +831,63 @@ class TargetSelection:
                                     local_ros_ogm,\
                                     [rx, ry],\
                                     [i , j])
-                        
-                        
                         # Reverse the path to start from the robot
                         path = path[::-1]
                         
                         # calclulate length of path
                         path_length = 0
-                        prev_point = [i, j]
+                        path_angle = 0
+                        cov_factor = 0
+                        not_cov_factor = 0
+                        prev_point = [rx, ry]
+                        prev_angle = robot_pose['th']
+                        #print prev_angle
                         #print path
+                        if path != []:
+                            path.pop(0)
                         for point in path:
-                            #print point, prev_point
+                            #print point[1] - prev_point[1],point[0] - prev_point[0]
                             length = math.sqrt((prev_point[0] - point[0])**2 + (prev_point[1] - point[1])**2)
+                            angle = math.atan2(point[1] - prev_point[1],point[0] - prev_point[0])
+                            real_angle = angle - prev_angle
+                            if coverage[point[0]][point[1]] == 100:
+                                cov_factor += 1
+                            else:
+                                not_cov_factor += 1
+                            #print real_angle
                             #print path_length
                             path_length += length
+                            path_angle += abs(real_angle)
+                            #print path_angle
                             prev_point = point
-                        
+                            prev_angle = angle
+                        #print rx, ry
+                        #print i, j
+                        #print path_length
                         #path_length = 1 / (1 - math.exp(-(((rx-i)**2 + (ry-j)**2) / 2*100**2)) + 0.01) * path_length
                         
+                        cov_factor = cov_factor / not_cov_factor
+                        
                         all_paths_length = np.append(all_paths_length, path_length)
+                        all_paths_angle = np.append(all_paths_angle, path_angle)
+                        all_cov_factors = np.append(all_cov_factors, cov_factor)
                         #print all_paths_length
                         
-                        path_angle = 0
-                        prev_point = [i, j]
+                        #path_angle = 0
+                        #prev_point = [i, j]
                         
-                        # calculate angle of path
-                        for point in path:
-                            #print point, prev_point
-                            angle = math.atan2(point[1] - prev_point[1],point[0] - prev_point[0])
-                            #print path_length
-                            path_angle += abs(angle)
-                            prev_point = point
-                        print path_angle
-                        all_paths_angle = np.append(all_paths_angle, path_angle)
-                        #print all_paths_angle
+                        ## calculate angle of path
+                        #for point in path:
+                            ##print point, prev_point
+                            #angle = math.atan2(point[1] - prev_point[1],point[0] - prev_point[0])
+                            ##print path_length
+                            #print angle
+                            #path_angle += abs(angle)
+                            #print path_angle
+                            #prev_point = point
+                        ##print path_angle
+                        #all_paths_angle = np.append(all_paths_angle, path_angle)
+                        ##print all_paths_angle
                         
                         self.goals_position.append([i, j])
                         
@@ -871,9 +895,12 @@ class TargetSelection:
             all_sum_dist_norm = 1 - ( (all_sum_dist - min(all_sum_dist) ) / ( max(all_sum_dist) - min(all_sum_dist) ) )
             all_paths_length_norm = 1 - ( (all_paths_length - min(all_paths_length) ) / ( max(all_paths_length) - min(all_paths_length) ) )
             all_paths_angle_norm = 1 - ( (all_paths_angle - min(all_paths_angle) ) / ( max(all_paths_angle) - min(all_paths_angle) ) )
+            all_cov_factors_norm = 1 - ( (all_cov_factors - min(all_cov_factors) ) / ( max(all_cov_factors) - min(all_cov_factors) ) )
             dig_all_sum_dist = 1 - ( (all_sum_dist - min(all_sum_dist) ) / ( max(all_sum_dist) - min(all_sum_dist) ) )
             dig_all_paths_length = 1 - ( (all_paths_length - min(all_paths_length) ) / ( max(all_paths_length) - min(all_paths_length) ) )
             dig_all_paths_angle = 1 - ( (all_paths_angle - min(all_paths_angle) ) / ( max(all_paths_angle) - min(all_paths_angle) ) )
+            dig_all_cov_factors = 1 - ( (all_cov_factors - min(all_cov_factors) ) / ( max(all_cov_factors) - min(all_cov_factors) ) )
+            
             #print all_sum_dist
             #dig_all_sum_dist = all_sum_dist[:]
             #print all_sum_dist_calc
@@ -891,31 +918,44 @@ class TargetSelection:
             dig_all_paths_angle[dig_all_paths_angle <= 0.5] = 0
             dig_all_paths_angle[dig_all_paths_angle > 0.5] = 1
             
-            #print all_sum_dist_norm
-            #print dig_all_sum_dist
-            #print all_paths_length_norm
-            #print dig_all_paths_length
-            #print all_paths_angle_norm
-            #print dig_all_paths_angle
+            dig_all_cov_factors[dig_all_cov_factors <= 0.5] = 0
+            dig_all_cov_factors[dig_all_cov_factors > 0.5] = 1
+            
+            print self.goals_position
+            print all_sum_dist_norm
+            print dig_all_sum_dist
+            print all_paths_length_norm
+            print dig_all_paths_length
+            print all_paths_angle_norm
+            print dig_all_paths_angle
+            print all_paths_angle_norm
+            print dig_all_cov_factors
             ## page 286 tsardoulias
             
-            self.goals_value = ((4 * all_sum_dist_norm + 2 * all_paths_length_norm + all_paths_angle_norm) / 7) * (4 * dig_all_sum_dist + 2 * dig_all_paths_length + dig_all_paths_angle)
-            print self.goals_value
+            self.goals_value = ((8 * all_sum_dist_norm + 4 * all_paths_length_norm + 2 * all_cov_factors_norm + all_paths_angle_norm) / 7) * (8 * dig_all_sum_dist + 4 * dig_all_paths_length + 2 * dig_all_cov_factors + dig_all_paths_angle)
+            
+            #self.goals_value = ((4 * all_sum_dist_norm + 2 * all_paths_length_norm + all_paths_angle_norm) / 7) * (4 * dig_all_sum_dist + 2 * dig_all_paths_length + dig_all_paths_angle)
+            
+            #print self.goals_value
             length_goals = len(self.goals_position)
             #print length_goals
             for k in range(length_goals):
                 #print self.goals_value[k]
-                self.goals_value[k] = (1 - math.exp(-(((rx-self.goals_position[k][0])**2 + (ry-self.goals_position[k][1])**2) / 2*10000))) * self.goals_value[k]
+                #print (rx-self.goals_position[k][0])**2
+                #print (ry-self.goals_position[k][1])**2
+                #print (-( ( (rx-self.goals_position[k][0])**2 + (ry-self.goals_position[k][1])**2 ) / (2*10000) ) )
+                #print ( 1 - math.exp(-( ( (rx-self.goals_position[k][0])**2 + (ry-self.goals_position[k][1])**2 ) / (2*10000) ) ) )
+                self.goals_value[k] = ( 1 - math.exp(-( ( (rx-self.goals_position[k][0])**2 + (ry-self.goals_position[k][1])**2 ) / (2*10000) ) ) ) * self.goals_value[k]
             
-            print self.goals_value
+            #print self.goals_value
             #self.goals_value.append([])
         else:
             while(select_another_target != 0):
                 if self.goals_value == []:
                     break
-                index_min = np.argmin(self.goals_value)
-                self.goals_value.pop(index_min)
-                self.goals_position.pop(index_min)
+                index_max = np.argmax(self.goals_value)
+                self.goals_value.pop(index_max)
+                self.goals_position.pop(index_max)
                 select_another_target -= 1
         
         # Publish the targets for visualization purposes
@@ -924,9 +964,9 @@ class TargetSelection:
         if self.goals_value == []:
             next_target = [0, 0]
         else:
-            index_min = np.argmin(self.goals_value)
-            xt = self.goals_position[index_min][0]
-            yt = self.goals_position[index_min][1]
+            index_max = np.argmax(self.goals_value)
+            xt = self.goals_position[index_max][0]
+            yt = self.goals_position[index_max][1]
             next_target = [xt, yt]
         
         return next_target
