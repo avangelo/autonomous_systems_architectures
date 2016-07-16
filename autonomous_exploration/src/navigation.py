@@ -152,11 +152,11 @@ class Navigation:
         # We are good to continue the exploration
         # Make this true in order not to call it again from the speeds assignment
         
-        if  self.target_selector == "nearest_unexplored_brush" or self.target_selector == "next_best_view" or self.target_selector == "best_topology":
+        if  self.target_selector == "nearest_unexplored_brush" or self.target_selector == "next_best_view" or self.target_selector == "best_topology" or self.target_selector == "combi":
             if self.select_another_target == 0:
                 
                 self.num_of_targets += 1
-                time.sleep(10)
+                time.sleep(0)
             
         self.target_exists = True
         
@@ -400,7 +400,7 @@ class Navigation:
             self.select_another_target = 0
         
         # Break the path to subgoals every 2 pixels (1m = 20px)
-        step = 3
+        step = 2
         n_subgoals = (int) (len(self.path)/step)
         self.subtargets = []
         for i in range(0, n_subgoals):

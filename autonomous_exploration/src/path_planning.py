@@ -23,8 +23,8 @@ class PathPlanning:
     # Function to be called from navigation
     def createPath(self, ogm, robot_pose, target_pose):
         # Debugging purposes print
-        print "PathPlanning: RobotPose=" + str(robot_pose) + " Target=" + \
-                str(target_pose)
+        #print "PathPlanning: RobotPose=" + str(robot_pose) + " Target=" + \
+                #str(target_pose)
 
         # Set the map
         map_req = OgmppSetMapSrvRequest()
