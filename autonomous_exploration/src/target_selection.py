@@ -796,10 +796,10 @@ class TargetSelection:
             self.goals_value = []
             #for i in range(0, ogm.shape[0]-1, 10):
                 #for j in range(0, ogm.shape[1]-1, 10):
-            #for i in range(400, 900, 5):
-                #for j in range(400, 900, 5):
-            for i in range(700, 1100, 20):
-                for j in range(700, 1100, 10):
+            for i in range(400, 900, 15):
+                for j in range(400, 900, 15):
+            #for i in range(700, 1100, 20):
+                #for j in range(700, 1100, 10):
                     
                     ogm_part = ogm[i-5:i+5,j-5:j+5]
                     ogm_part_big = ogm[i-25:i+25,j-25:j+25]

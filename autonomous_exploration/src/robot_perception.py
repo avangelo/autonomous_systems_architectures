@@ -195,6 +195,7 @@ class RobotPerception:
                     self.current_cell = [x_cell, y_cell]
                     #print rx, ry
                     #print self.cell_matrix[37:49, 36:49]
+        
 
     # Getting the occupancy grid map
     def readMap(self, data):

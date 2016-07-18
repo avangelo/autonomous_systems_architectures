@@ -72,8 +72,31 @@ class Navigation:
         self.time_exploration_path_planning = 0
         self.time_exploration_target_selection = 0
         self.num_of_targets = 0
+        self.time_is_up = False
         
     def checkTarget(self, event):
+        
+        # Stop the robot if time_limit has passed and calculate percentage of ogm and coverage
+        if time.time() - self.start_time > self.time_limit:
+            if self.time_is_up == False:
+                coverage = self.robot_perception.getCoverage()
+                ogm = self.robot_perception.getMap()
+                explored_pixels = np.sum(ogm < 51)
+                covered_pixels = np.sum(coverage == 100)
+                print "Time is up!!! Exploration is complete!"
+                print "The number of explored pixels is:"
+                print explored_pixels
+                print "The number of covered pixels is:"
+                print covered_pixels
+                self.target_exists = False
+                #raise SystemExit
+                self.time_is_up = True
+                return
+                #time.sleep(111)
+            else:
+                self.target_exist = False
+                return
+        
         # Check if we have a target or if the robot just wanders
         if self.inner_target_exists == False or self.move_with_target == False or\
                 self.next_subtarget == len(self.subtargets):
@@ -85,7 +108,9 @@ class Navigation:
             self.robot_perception.robot_pose['y_px'] - \
                     self.robot_perception.origin['y'] / self.robot_perception.resolution\
                     ]
-
+                    
+        
+            
         # YOUR CODE HERE ------------------------------------------------------
         # Here the next subtarget is checked for proximity. If the robot is too
         # close to the subtarget it is considered approached and the next
@@ -108,6 +133,8 @@ class Navigation:
           if self.next_subtarget == len(self.subtargets):
             print "Final goal reached!"
             self.target_exists = False
+            
+        
 
         # ---------------------------------------------------------------------
 
@@ -148,6 +175,10 @@ class Navigation:
         while self.robot_perception.have_map == False:
           return
         
+        if self.time_is_up == True:
+            self.target_exists = False
+            return
+        
         print "Navigation: Producing new target"
         # We are good to continue the exploration
         # Make this true in order not to call it again from the speeds assignment
@@ -156,10 +187,9 @@ class Navigation:
             if self.select_another_target == 0:
                 
                 self.num_of_targets += 1
-                time.sleep(0)
+                time.sleep(10)
             
         self.target_exists = True
-        
         
         start = time.time()
         
@@ -187,155 +217,84 @@ class Navigation:
         
         start = time.time()
         
-        if self.time_limit == 0:
-            if self.target_selector == "random":
-                target = self.target_selection.selectTarget(\
-                    local_ogm,\
-                    local_coverage,\
-                    self.robot_perception.robot_pose)
-            elif self.target_selector == "nearest_uncovered":
-                target = self.target_selection.selectNearestUncovered(\
-                    local_ogm,\
-                    local_coverage,\
-                    self.robot_perception.robot_pose,\
-                    self.select_another_target)
-            elif self.target_selector == "nearest_uncovered_brush":
-                target = self.target_selection.selectNearestUncoveredBrush(\
-                    local_ogm,\
-                    local_coverage,\
-                    self.robot_perception.robot_pose,\
-                    self.select_another_target,\
-                    self.robot_perception.origin,\
-                    self.robot_perception.resolution)
-            elif self.target_selector == "nearest_uncovered_circle":
-                target = self.target_selection.selectNearestUncoveredCircle(\
-                    local_ogm,\
-                    local_coverage,\
-                    self.robot_perception.robot_pose,\
-                    self.select_another_target)
-            elif self.target_selector == "nearest_unexplored":
-                target = self.target_selection.selectNearestUnexplored(\
-                    local_ogm,\
-                    local_coverage,\
-                    self.robot_perception.robot_pose,\
-                    self.select_another_target)
-            elif self.target_selector == "nearest_unexplored_brush":
-                target = self.target_selection.selectNearestUnexploredBrush(\
-                    local_ogm,\
-                    local_coverage,\
-                    self.robot_perception.robot_pose,\
-                    self.select_another_target,\
-                    self.robot_perception.origin,\
-                    self.robot_perception.resolution)
-            elif self.target_selector == "nearest_unexplored_circle":
-                target = self.target_selection.selectNearestUnexploredCircle(\
-                    local_ogm,\
-                    local_coverage,\
-                    self.robot_perception.robot_pose,\
-                    self.select_another_target)
-            elif self.target_selector == "best_topology":
-                target = self.target_selection.selectBestTopology(\
-                    local_ogm,\
-                    local_coverage,\
-                    self.robot_perception.robot_pose,\
-                    self.select_another_target,\
-                    self.robot_perception.origin,\
-                    self.robot_perception.resolution)
-            elif self.target_selector == "next_best_view":
-                target = self.target_selection.selectNextBestView(\
-                    local_ogm,\
-                    local_coverage,\
-                    self.robot_perception.robot_pose,\
-                    self.select_another_target,\
-                    self.robot_perception.origin,\
-                    self.robot_perception.resolution)
-            elif self.target_selector == "combi":
-                target = self.target_selection.selectCombi(\
-                    local_ogm,\
-                    local_coverage,\
-                    self.robot_perception.robot_pose,\
-                    self.select_another_target,\
-                    self.robot_perception.origin,\
-                    self.robot_perception.resolution)
-            else:
-                print "Target function selected doesn't exist"
-            
-            if target == [0, 0]:
-                
-                if self.target_selector == "next_best_view" or self.target_selector == "nearest_unexplored_brush":
-                    print "Can't find new unexplored target. Calling Nearest Uncovered Brushfire"
-                    self.target_selector = "nearest_uncovered_brush"
-                    target = self.target_selection.selectNearestUncoveredBrush(\
-                        local_ogm,\
-                        local_coverage,\
-                        self.robot_perception.robot_pose,\
-                        self.select_another_target,\
-                        self.robot_perception.origin,\
-                        self.robot_perception.resolution)
-                    end_time_exploration = time.time()
-                    self.time_exploration = end_time_exploration - self.start_time
-                    self.time_exploration_coverage = self.time_coverage
-                    self.time_exploration_path_planning = self.time_path_planning
-                    self.time_exploration_target_selection = self.time_target_selection
-                    print "The time needed to explore the area is:"
-                    print self.time_exploration
-                else:
-                    print "Can't find new target. The exploration is complete"
-                    self.end_time = time.time()
-                    print "Temporal Cost Overall:"
-                    print self.end_time - self.start_time
-                    print "Coverage Update Tine Overall:"
-                    print self.time_coverage
-                    print "Path Planning Time Overall:"
-                    print self.time_path_planning
-                    print "Target Selection Time Overall:"
-                    print self.time_target_selection
-                    print "Spatial Cost:"
-                    print np.sum(self.robot_perception.cell_matrix != 0)
-                    print np.sum(self.robot_perception.cell_matrix)
-                    print "Exploration Overall Time:"
-                    print self.time_exploration
-                    print "Exploration Coverage Update Tine Overall:"
-                    print self.time_exploration_coverage
-                    print "Exploration Path Planning Tine Overall:"
-                    print self.time_exploration_path_planning
-                    print "Exploration Target Selection Time Overall:"
-                    print self.time_exploration_target_selection
-                    print "OGM waiting time:"
-                    print self.num_of_targets * 10
-                    return
-            else:
-                print "Navigation: New target: " + str(target)
+        #if self.time_limit == 0:
+        if self.target_selector == "random":
+            target = self.target_selection.selectTarget(\
+                local_ogm,\
+                local_coverage,\
+                self.robot_perception.robot_pose)
+        elif self.target_selector == "nearest_uncovered":
+            target = self.target_selection.selectNearestUncovered(\
+                local_ogm,\
+                local_coverage,\
+                self.robot_perception.robot_pose,\
+                self.select_another_target)
+        elif self.target_selector == "nearest_uncovered_brush":
+            target = self.target_selection.selectNearestUncoveredBrush(\
+                local_ogm,\
+                local_coverage,\
+                self.robot_perception.robot_pose,\
+                self.select_another_target,\
+                self.robot_perception.origin,\
+                self.robot_perception.resolution)
+        elif self.target_selector == "nearest_uncovered_circle":
+            target = self.target_selection.selectNearestUncoveredCircle(\
+                local_ogm,\
+                local_coverage,\
+                self.robot_perception.robot_pose,\
+                self.select_another_target)
+        elif self.target_selector == "nearest_unexplored":
+            target = self.target_selection.selectNearestUnexplored(\
+                local_ogm,\
+                local_coverage,\
+                self.robot_perception.robot_pose,\
+                self.select_another_target)
+        elif self.target_selector == "nearest_unexplored_brush":
+            target = self.target_selection.selectNearestUnexploredBrush(\
+                local_ogm,\
+                local_coverage,\
+                self.robot_perception.robot_pose,\
+                self.select_another_target,\
+                self.robot_perception.origin,\
+                self.robot_perception.resolution)
+        elif self.target_selector == "nearest_unexplored_circle":
+            target = self.target_selection.selectNearestUnexploredCircle(\
+                local_ogm,\
+                local_coverage,\
+                self.robot_perception.robot_pose,\
+                self.select_another_target)
+        elif self.target_selector == "best_topology":
+            target = self.target_selection.selectBestTopology(\
+                local_ogm,\
+                local_coverage,\
+                self.robot_perception.robot_pose,\
+                self.select_another_target,\
+                self.robot_perception.origin,\
+                self.robot_perception.resolution)
+        elif self.target_selector == "next_best_view":
+            target = self.target_selection.selectNextBestView(\
+                local_ogm,\
+                local_coverage,\
+                self.robot_perception.robot_pose,\
+                self.select_another_target,\
+                self.robot_perception.origin,\
+                self.robot_perception.resolution)
+        elif self.target_selector == "combi":
+            target = self.target_selection.selectCombi(\
+                local_ogm,\
+                local_coverage,\
+                self.robot_perception.robot_pose,\
+                self.select_another_target,\
+                self.robot_perception.origin,\
+                self.robot_perception.resolution)
         else:
-            if time.time() - self.start_time < self.time_limit:
-                print "The target function is Next Best View"
-                target = self.target_selection.selectNextBestView(\
-                    local_ogm,\
-                    local_coverage,\
-                    self.robot_perception.robot_pose,\
-                    self.select_another_target,\
-                    self.robot_perception.origin,\
-                    self.robot_perception.resolution)
-            elif time.time() - self.start_time < 2 * self.time_limit:
-                print "The target function is Nearest Unexplored Brushfire"
-                target = self.target_selection.selectNearestUnexploredBrush(\
-                    local_ogm,\
-                    local_coverage,\
-                    self.robot_perception.robot_pose,\
-                    self.select_another_target,\
-                    self.robot_perception.origin,\
-                    self.robot_perception.resolution)
-            elif time.time() - self.start_time < 3 * self.time_limit:
-                print "The target function is Best Topology"
-                target = self.target_selection.selectBestTopology(\
-                    local_ogm,\
-                    local_coverage,\
-                    self.robot_perception.robot_pose,\
-                    self.select_another_target,\
-                    self.robot_perception.origin,\
-                    self.robot_perception.resolution)
-            elif time.time() - self.start_time < 4 * self.time_limit:
-                print "The target function is Nearest Uncovered Brushfire"
+            print "Target function selected doesn't exist"
+        
+        if target == [0, 0]:
+            
+            if self.target_selector == "next_best_view" or self.target_selector == "nearest_unexplored_brush":
+                print "Can't find new unexplored target. Calling Nearest Uncovered Brushfire"
+                self.target_selector = "nearest_uncovered_brush"
                 target = self.target_selection.selectNearestUncoveredBrush(\
                     local_ogm,\
                     local_coverage,\
@@ -343,18 +302,89 @@ class Navigation:
                     self.select_another_target,\
                     self.robot_perception.origin,\
                     self.robot_perception.resolution)
-                if target == []:
-                    print "Can't find new target. The exploration is complete"
-                    self.end_time = time.time()
-                    print "Temporal Cost:"
-                    print self.end_time - self.start_time
-                    print "Spatial Cost:"
-                    print np.sum(self.robot_perception.cell_matrix != 0)
-                    print np.sum(self.robot_perception.cell_matrix)
-                    return
+                end_time_exploration = time.time()
+                self.time_exploration = end_time_exploration - self.start_time
+                self.time_exploration_coverage = self.time_coverage
+                self.time_exploration_path_planning = self.time_path_planning
+                self.time_exploration_target_selection = self.time_target_selection
+                print "The time needed to explore the area is:"
+                print self.time_exploration
             else:
-                print "Time is Up!!! Exploration is complete"
+                print "Can't find new target. The exploration is complete"
+                self.end_time = time.time()
+                print "Temporal Cost Overall:"
+                print self.end_time - self.start_time
+                print "Coverage Update Tine Overall:"
+                print self.time_coverage
+                print "Path Planning Time Overall:"
+                print self.time_path_planning
+                print "Target Selection Time Overall:"
+                print self.time_target_selection
+                print "Spatial Cost:"
+                print np.sum(self.robot_perception.cell_matrix != 0)
+                print np.sum(self.robot_perception.cell_matrix)
+                print "Exploration Overall Time:"
+                print self.time_exploration
+                print "Exploration Coverage Update Tine Overall:"
+                print self.time_exploration_coverage
+                print "Exploration Path Planning Tine Overall:"
+                print self.time_exploration_path_planning
+                print "Exploration Target Selection Time Overall:"
+                print self.time_exploration_target_selection
+                print "OGM waiting time:"
+                print self.num_of_targets * 10
                 return
+        else:
+            print "Navigation: New target: " + str(target)
+        #else:
+            #if time.time() - self.start_time < self.time_limit:
+                #print "The target function is Next Best View"
+                #target = self.target_selection.selectNextBestView(\
+                    #local_ogm,\
+                    #local_coverage,\
+                    #self.robot_perception.robot_pose,\
+                    #self.select_another_target,\
+                    #self.robot_perception.origin,\
+                    #self.robot_perception.resolution)
+            #elif time.time() - self.start_time < 2 * self.time_limit:
+                #print "The target function is Nearest Unexplored Brushfire"
+                #target = self.target_selection.selectNearestUnexploredBrush(\
+                    #local_ogm,\
+                    #local_coverage,\
+                    #self.robot_perception.robot_pose,\
+                    #self.select_another_target,\
+                    #self.robot_perception.origin,\
+                    #self.robot_perception.resolution)
+            #elif time.time() - self.start_time < 3 * self.time_limit:
+                #print "The target function is Best Topology"
+                #target = self.target_selection.selectBestTopology(\
+                    #local_ogm,\
+                    #local_coverage,\
+                    #self.robot_perception.robot_pose,\
+                    #self.select_another_target,\
+                    #self.robot_perception.origin,\
+                    #self.robot_perception.resolution)
+            #elif time.time() - self.start_time < 4 * self.time_limit:
+                #print "The target function is Nearest Uncovered Brushfire"
+                #target = self.target_selection.selectNearestUncoveredBrush(\
+                    #local_ogm,\
+                    #local_coverage,\
+                    #self.robot_perception.robot_pose,\
+                    #self.select_another_target,\
+                    #self.robot_perception.origin,\
+                    #self.robot_perception.resolution)
+                #if target == []:
+                    #print "Can't find new target. The exploration is complete"
+                    #self.end_time = time.time()
+                    #print "Temporal Cost:"
+                    #print self.end_time - self.start_time
+                    #print "Spatial Cost:"
+                    #print np.sum(self.robot_perception.cell_matrix != 0)
+                    #print np.sum(self.robot_perception.cell_matrix)
+                    #return
+            #else:
+                #print "Time is Up!!! Exploration is complete"
+                #return
         
         end = time.time()
         print "Time till now(target_selection):", self.time_target_selection
@@ -463,7 +493,7 @@ class Navigation:
         # robot_perception and the next_subtarget [x,y]. From these, you can 
         # compute the robot velocities for the vehicle to approach the target.
         # Hint: Trigonometry is required
-    
+        
         max_angular = 2
         max_linear  = 0.25
 
@@ -493,7 +523,7 @@ class Navigation:
             linear = (1 - abs(angular))**16 * max_linear
             angular = angular * max_angular
             #linear = (1 - abs(angular))**16 * max_linear
-			#print "[linear,angular] = [%f,%f]" % (linear,angular)
+            #print "[linear,angular] = [%f,%f]" % (linear,angular)
         # ---------------------------------------------------------------------
 
         return [linear, angular]
