@@ -925,3 +925,196 @@ class TargetSelection:
             next_target = [xt, yt]
         
         return next_target
+
+
+    def selectCombiks(self, ogm, coverage, robot_pose, select_another_target, origin, resolution, t_limit, t_start):
+            
+            # The next target in pixels
+            next_target = [0, 0]
+            [rx, ry] = [\
+                robot_pose['x_px'] - \
+                        origin['x'] / resolution,\
+                robot_pose['y_px'] - \
+                        origin['y'] / resolution\
+                        ]
+            unexplored_ray_value = 200
+            max_ray = 5
+            all_paths_length = []
+            all_paths_angle = []
+            all_sum_dist = []
+            all_cov_factors = []
+            local_ros_ogm = self.robot_perception.getRosMap()
+            
+            if select_another_target == 0:
+                self.goals_position = []
+                self.goals_value = []
+                #for i in range(0, ogm.shape[0]-1, 10):
+                    #for j in range(0, ogm.shape[1]-1, 10):
+                #for i in range(400, 900, 15):
+                    #for j in range(400, 900, 15):
+                for i in range(700, 1100, 20):
+                    for j in range(700, 1100, 20):
+                        
+                        ogm_part = ogm[i-5:i+5,j-5:j+5]
+                        ogm_part_big = ogm[i-25:i+25,j-25:j+25]
+                        #cov_part = coverage[i-6:i+6,j-6:j+6]
+                        
+                        dist = []
+                        #if coverage[i][j] != 100 and np.all(ogm_part < 51) and np.any(ogm_part_big > 51):
+                        if coverage[i][j] != 100 and np.all(ogm_part < 51):
+                            # topology
+                            for w in range(0, 359, 45):
+                                w = w * 2 * math.pi / 360
+                                x = i
+                                y = j
+                                length_ray = 0
+                                next_pixel = 0
+                                while(ogm[x][y] < 51 and length_ray <= max_ray):
+                                    next_pixel += 1
+                                    x = i + next_pixel * math.cos(w)
+                                    y = j + next_pixel * math.sin(w)
+                                    length_ray = math.sqrt((x - i)**2 + (y - j)**2) * resolution
+                                if ogm[x][y] == 51:
+                                    dist = np.append(dist, max_ray / resolution)
+                                else:
+                                    dist = np.append(dist, length_ray / resolution)
+                            # path length, angle
+                            sum_dist = np.sum(dist) / 8
+                            path = self.path_planning.createPath(\
+                                        local_ros_ogm,\
+                                        [rx, ry],\
+                                        [i , j])
+                            
+                            if path == []:
+                                break
+                            
+                            # Reverse the path to start from the robot
+                            path = path[::-4]
+                            
+                            # calclulate length of path
+                            path_length = 0
+                            path_angle = 0
+                            cov_factor = 0
+                            not_cov_factor = 1
+                            prev_point = [rx, ry]
+                            prev_angle = robot_pose['th']
+
+                            if path != []:
+                                path.pop(0)
+                            for point in path:
+                                length = math.sqrt((prev_point[0] - point[0])**2 + (prev_point[1] - point[1])**2)
+                                angle = math.atan2(point[1] - prev_point[1],point[0] - prev_point[0])
+                                real_angle = angle - prev_angle
+                                if coverage[point[0]][point[1]] == 100:
+                                    cov_factor += 1
+                                else:
+                                    not_cov_factor += 1
+                                path_length += length
+                                path_angle += abs(real_angle)
+                                prev_point = point
+                                prev_angle = angle
+                            cov_factor_ = float(cov_factor) / float(not_cov_factor)
+                            
+                            
+                            all_sum_dist = np.append(all_sum_dist, sum_dist)
+                            all_paths_length = np.append(all_paths_length, path_length)
+                            all_paths_angle = np.append(all_paths_angle, path_angle)
+                            all_cov_factors = np.append(all_cov_factors, cov_factor_)
+                            
+                            self.goals_position.append([i, j])
+                if self.goals_position != []:
+                    
+                    # normalize weights (0-1)
+                    all_sum_dist_norm = 1 - ( (all_sum_dist - min(all_sum_dist) ) / ( max(all_sum_dist) - min(all_sum_dist) ) )
+                    all_paths_length_norm = 1 - ( (all_paths_length - min(all_paths_length) ) / ( max(all_paths_length) - min(all_paths_length) ) )
+                    all_paths_angle_norm = 1 - ( (all_paths_angle - min(all_paths_angle) ) / ( max(all_paths_angle) - min(all_paths_angle) ) )
+                    all_cov_factors_norm = 1 - ( (all_cov_factors - min(all_cov_factors) ) / ( max(all_cov_factors) - min(all_cov_factors) ) )
+                    dig_all_sum_dist = 1 - ( (all_sum_dist - min(all_sum_dist) ) / ( max(all_sum_dist) - min(all_sum_dist) ) )
+                    dig_all_paths_length = 1 - ( (all_paths_length - min(all_paths_length) ) / ( max(all_paths_length) - min(all_paths_length) ) )
+                    dig_all_paths_angle = 1 - ( (all_paths_angle - min(all_paths_angle) ) / ( max(all_paths_angle) - min(all_paths_angle) ) )
+                    dig_all_cov_factors = 1 - ( (all_cov_factors - min(all_cov_factors) ) / ( max(all_cov_factors) - min(all_cov_factors) ) )
+                    
+                    # digitalize
+                    dig_all_sum_dist[dig_all_sum_dist <= 0.5] = 0
+                    dig_all_sum_dist[dig_all_sum_dist > 0.5] = 1
+
+                    dig_all_paths_length[dig_all_paths_length <= 0.5] = 0
+                    dig_all_paths_length[dig_all_paths_length > 0.5] = 1
+                    
+                    dig_all_paths_angle[dig_all_paths_angle <= 0.5] = 0
+                    dig_all_paths_angle[dig_all_paths_angle > 0.5] = 1
+                    
+                    dig_all_cov_factors[dig_all_cov_factors <= 0.5] = 0
+                    dig_all_cov_factors[dig_all_cov_factors > 0.5] = 1
+                    
+                    #if time.time() - t_start < t_limit / 2:
+                        #k_top = 8
+                        #k_len = 4
+                        #k_cov = 2
+                        #k_ang = 1
+                    #else:
+                        #print " k changed!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+                        #k_top = 4
+                        #k_len = 8
+                        #k_cov = 2
+                        #k_ang = 1
+                    
+                    # k-change over time
+                    k_top_start = 8
+                    k_top_end   = 1
+                    
+                    k_len_start = 4
+                    k_len_end   = 2
+                    
+                    k_cov_start = 2
+                    k_cov_end   = 4
+                    
+                    k_ang_start = 1
+                    k_ang_end   = 8
+                    
+                    t = time.time() - t_start
+                    print t, t_limit
+                    
+                    k_top = (k_top_end - k_top_start) * (t/t_limit) + k_top_start
+                    k_len = (k_len_end - k_len_start) * (t/t_limit) + k_len_start
+                    k_cov = (k_cov_end - k_cov_start) * (t/t_limit) + k_cov_start
+                    k_ang = (k_ang_end - k_ang_start) * (t/t_limit) + k_ang_start
+                    
+                    print "k_top = ", k_top
+                    print "k_len = ", k_len
+                    print "k_cov = ", k_cov
+                    print "k_ang = ", k_ang
+                    print "ks = ", k_top + k_len + k_cov + k_ang
+                    
+                    self.goals_value = ((k_top * all_sum_dist_norm + k_len * all_paths_length_norm + k_cov * all_cov_factors_norm + k_ang * all_paths_angle_norm) / 15) * (k_top * dig_all_sum_dist + k_len * dig_all_paths_length + k_cov * dig_all_cov_factors + k_ang * dig_all_paths_angle)
+                    #self.goals_value = ((4 * all_sum_dist_norm + 2 * all_paths_length_norm + all_paths_angle_norm) / 7) * (4 * dig_all_sum_dist + 2 * dig_all_paths_length + dig_all_paths_angle)
+                    length_goals = len(self.goals_position)
+                    
+                    for k in range(length_goals):
+                    
+                        self.goals_value[k] = ( 1 - math.exp(-( ( (rx-self.goals_position[k][0])**2 + (ry-self.goals_position[k][1])**2 ) / (2*750) ) ) ) * self.goals_value[k]
+                    
+                    self.goals_value.tolist()
+                else:
+                    next_target = [0, 0]
+            else:
+                while(select_another_target != 0):
+                    if self.goals_value == []:
+                        break
+                    index_max = np.argmax(self.goals_value)
+                    self.goals_value.pop(index_max)
+                    self.goals_position.pop(index_max)
+                    select_another_target -= 1
+            
+            # Publish the targets for visualization purposes
+            self.show_targets(origin, resolution)
+            
+            if self.goals_value == []:
+                next_target = [0, 0]
+            else:
+                index_max = np.argmax(self.goals_value)
+                xt = self.goals_position[index_max][0]
+                yt = self.goals_position[index_max][1]
+                next_target = [xt, yt]
+            
+            return next_target

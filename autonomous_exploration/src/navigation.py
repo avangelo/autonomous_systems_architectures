@@ -77,7 +77,7 @@ class Navigation:
     def checkTarget(self, event):
         
         # Stop the robot if time_limit has passed and calculate percentage of ogm and coverage
-        if time.time() - self.start_time > self.time_limit:
+        if time.time() - self.start_time > self.time_limit and self.time_limit != 0:
             if self.time_is_up == False:
                 coverage = self.robot_perception.getCoverage()
                 ogm = self.robot_perception.getMap()
@@ -287,6 +287,16 @@ class Navigation:
                 self.select_another_target,\
                 self.robot_perception.origin,\
                 self.robot_perception.resolution)
+        elif self.target_selector == "combiks":
+            target = self.target_selection.selectCombiks(\
+                local_ogm,\
+                local_coverage,\
+                self.robot_perception.robot_pose,\
+                self.select_another_target,\
+                self.robot_perception.origin,\
+                self.robot_perception.resolution,\
+                self.time_limit,\
+                self.start_time)
         else:
             print "Target function selected doesn't exist"
         

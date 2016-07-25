@@ -13,7 +13,8 @@ velocities_architecture: 'motor_schema'
 #                  'best_topology'
 #                  'next_best_view'
 #                  'combi'
-target_selector: 'nearest_uncovered_brush'
+#                  'combiks'
+target_selector: 'combiks'
 
 # Debugging purposes
 print_velocities: False
@@ -49,4 +50,4 @@ base_footprint_frame: '/base_footprint'
 cell_size: 20
 
 # Time (seconds)
-time_limit: 10
+time_limit: 900
